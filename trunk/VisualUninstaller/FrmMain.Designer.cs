@@ -48,7 +48,7 @@ namespace VisualUninstaller
             this.findTextBox.Location = new System.Drawing.Point(35, 6);
             this.findTextBox.Name = "findTextBox";
             this.findTextBox.Size = new System.Drawing.Size(361, 20);
-            this.findTextBox.TabIndex = 2;
+            this.findTextBox.TabIndex = 0;
             this.findTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.findTextBox_KeyPress);
             this.findTextBox.TextChanged += new System.EventHandler(this.findTextBox_TextChanged);
             this.findTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.findTextBox_KeyDown);
@@ -66,7 +66,7 @@ namespace VisualUninstaller
             this.programsList.Location = new System.Drawing.Point(12, 33);
             this.programsList.Name = "programsList";
             this.programsList.Size = new System.Drawing.Size(384, 287);
-            this.programsList.TabIndex = 0;
+            this.programsList.TabIndex = 1;
             this.programsList.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.programsList_MouseDoubleClick);
             this.programsList.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.programsList_DrawItem);
             this.programsList.SelectedIndexChanged += new System.EventHandler(this.programsList_SelectedIndexChanged);
@@ -103,7 +103,7 @@ namespace VisualUninstaller
             this.removeSelectedBtn.Location = new System.Drawing.Point(276, 327);
             this.removeSelectedBtn.Name = "removeSelectedBtn";
             this.removeSelectedBtn.Size = new System.Drawing.Size(120, 24);
-            this.removeSelectedBtn.TabIndex = 1;
+            this.removeSelectedBtn.TabIndex = 2;
             this.removeSelectedBtn.Text = "Remove selected";
             this.removeSelectedBtn.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.removeSelectedBtn.Click += new System.EventHandler(this.button1_Click);
