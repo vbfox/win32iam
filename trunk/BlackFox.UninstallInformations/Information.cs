@@ -88,12 +88,10 @@ namespace BlackFox.Win32.UninstallInformations
         string m_displayName;
         string m_uninstallString;
         string m_uninstallDir;
-        string m_installLocation;
         string m_publisher;
         string m_comments;
         string m_displayIconPath;
-        int m_versionMajor;
-        int m_versionMinor;
+        string m_parentKeyName;
 
         #endregion
 
@@ -101,42 +99,32 @@ namespace BlackFox.Win32.UninstallInformations
 
         public string Comments
         {
-            get
-            {
-                return m_comments;
-            }
+            get { return m_comments; }
         }
 
         public string DisplayName
         {
-            get
-            {
-                return m_displayName;
-            }
+            get { return m_displayName; }
         }
 
         public string KeyName
         {
-            get
-            {
-                return m_keyName;
-            }
+            get { return m_keyName; }
         }
 
         public string UninstallString
         {
-            get
-            {
-                return m_uninstallString;
-            }
+            get { return m_uninstallString; }
         }
 
         public string UninstallDir
         {
-            get
-            {
-                return m_uninstallDir;
-            }
+            get { return m_uninstallDir; }
+        }
+
+        public string ParentKeyName
+        {
+            get { return m_parentKeyName; }
         }
 
         #endregion
@@ -149,6 +137,8 @@ namespace BlackFox.Win32.UninstallInformations
             m_uninstallDir = (string)key.GetValue("UninstallDir");
             m_displayIconPath = (string)key.GetValue("DisplayIcon");
             m_comments = (string)key.GetValue("Comments");
+            m_publisher = (string)key.GetValue("Publisher");
+            m_parentKeyName = (string)key.GetValue("ParentKeyName");
         }
 
         #region IComparable<Information> Members

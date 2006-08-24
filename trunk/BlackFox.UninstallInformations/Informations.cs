@@ -72,6 +72,27 @@ namespace BlackFox.Win32.UninstallInformations
 
         #endregion
 
+        #region Filter useless infos
+
+        static void FilterList(List<Information> infos)
+        {
+            List<Information> toRemove = new List<Information>();
+            foreach (Information info in infos)
+            {
+                if ( (info.DisplayName == null)
+                    || (info.ParentKeyName != null) )
+                {
+                    toRemove.Add(info);
+                }
+            }
+            foreach(Information info in toRemove)
+            {
+                infos.Remove(info);
+            }
+        }
+
+        #endregion
+
         #region GetInformations
 
         public static List<Information> GetInformations(bool OnlyUninstallable)
@@ -96,6 +117,7 @@ namespace BlackFox.Win32.UninstallInformations
                 }
             }
             infos.Sort();
+            FilterList(infos);
             PathInformationsWithWindowsInstallerIcons(infos);
             return infos;
         }
@@ -119,6 +141,7 @@ namespace BlackFox.Win32.UninstallInformations
                     infos.Add(info);
                 }
             }
+            FilterList(infos);
             PathInformationsWithWindowsInstallerIcons(infos);
             return infos;
         }
