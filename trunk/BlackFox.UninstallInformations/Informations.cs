@@ -36,6 +36,42 @@ namespace BlackFox.Win32.UninstallInformations
             }
         }
 
+        #region Windows Installer Icons
+
+        static Dictionary<string, string> GetWindowsInstallerIcons()
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            using (RegistryKey wiProducts = Registry.ClassesRoot.OpenSubKey(@"Installer\Products"))
+            {
+                foreach (string subKeyName in wiProducts.GetSubKeyNames())
+                    using (RegistryKey subKey = wiProducts.OpenSubKey(subKeyName))
+                    {
+                        string iconPath = (string)subKey.GetValue("ProductIcon");
+                        if (iconPath != null)
+                        {
+                            result.Add((string)subKey.GetValue("ProductName"), iconPath);
+                        }
+                    }
+            }
+            return result;
+        }
+
+        static void PathInformationsWithWindowsInstallerIcons(List<Information> infos)
+        {
+            Dictionary<string, string> icons = GetWindowsInstallerIcons();
+            foreach (Information info in infos)
+            {
+                string iconPath;
+                if ( ((info.DisplayIconPath == null) || (info.DisplayIconPath == "")) 
+                    && icons.TryGetValue(info.DisplayName, out iconPath) )
+                {
+                    info.DisplayIconPath = iconPath;
+                }
+            }
+        }
+
+        #endregion
+
         #region GetInformations
 
         public static List<Information> GetInformations(bool OnlyUninstallable)
@@ -60,6 +96,7 @@ namespace BlackFox.Win32.UninstallInformations
                 }
             }
             infos.Sort();
+            PathInformationsWithWindowsInstallerIcons(infos);
             return infos;
         }
 
@@ -82,6 +119,7 @@ namespace BlackFox.Win32.UninstallInformations
                     infos.Add(info);
                 }
             }
+            PathInformationsWithWindowsInstallerIcons(infos);
             return infos;
         }
 

@@ -185,6 +185,12 @@ namespace BlackFox.Win32.UninstallInformations
             }
         }
 
+        public string DisplayIconPath
+        {
+            get { return m_displayIconPath; }
+            set { m_displayIconPath = value; }
+        }
+
         public Icon Icon
         {
             get
