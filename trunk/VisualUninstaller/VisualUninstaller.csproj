@@ -9,8 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VisualUninstaller</RootNamespace>
     <AssemblyName>VisualUninstaller</AssemblyName>
-    <ApplicationIcon>
-    </ApplicationIcon>
+    <ApplicationIcon>..\media\iam.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -79,6 +78,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Windows Installer.ICO" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="iam.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
