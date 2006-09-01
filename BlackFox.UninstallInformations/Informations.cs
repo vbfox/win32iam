@@ -72,32 +72,15 @@ namespace BlackFox.Win32.UninstallInformations
 
         #endregion
 
-        #region Filter useless infos
-
-        static void FilterList(List<Information> infos)
-        {
-            List<Information> toRemove = new List<Information>();
-            foreach (Information info in infos)
-            {
-                if ( (info.DisplayName == null)
-                    || (info.ParentKeyName != null) )
-                {
-                    toRemove.Add(info);
-                }
-            }
-            foreach(Information info in toRemove)
-            {
-                infos.Remove(info);
-            }
-        }
-
-        #endregion
-
         #region GetInformations
 
-        public static List<Information> GetInformations(bool OnlyUninstallable)
+        public delegate bool InformationFilterDelegate(Information info);
+
+        public static List<Information> GetInformations(InformationFilterDelegate filter)
         {
+            
             List<Information> infos = new List<Information>();
+            
             using (RegistryKey uninstallKey = Key)
             {
                 foreach (string subKeyName in uninstallKey.GetSubKeyNames())
@@ -105,60 +88,60 @@ namespace BlackFox.Win32.UninstallInformations
                     using (RegistryKey subKey = uninstallKey.OpenSubKey(subKeyName))
                     {
                         Information info = new Information(subKey);
-
-                        if (info.DisplayName != null)
+                        if (filter(info))
                         {
-                            if ( (!OnlyUninstallable) || (OnlyUninstallable && info.Uninstallable) )
-                            {
-                                infos.Add(info);
-                            }
+                            infos.Add(info);
                         }
                     }
                 }
             }
             infos.Sort();
-            FilterList(infos);
             PathInformationsWithWindowsInstallerIcons(infos);
             return infos;
         }
 
-        public static List<Information> GetInformations()
+        static InformationFilterDelegate BaseFilterDelegate
         {
-            return GetInformations(true);
+            get
+            {
+                return delegate(Information info)
+                {
+                    return (info.DisplayName != null)
+                    && (info.ParentKeyName == null)
+                    && (info.Uninstallable);
+                };
+            }
         }
 
-        public static List<Information> GetInformations(Regex regexp, bool OnlyUninstallable)
+        public static List<Information> GetInformations()
+        {
+            return GetInformations(BaseFilterDelegate);
+        }
+
+        public static List<Information> GetInformations(Regex regexp, InformationFilterDelegate filter)
         {
             List<Information> infos = new List<Information>();
-            List<Information> originalInfos = GetInformations(OnlyUninstallable);
-            foreach (Information info in originalInfos)
-            {
-                bool match = true;
-                match &= regexp.IsMatch(info.DisplayName);
-
-                if (match)
+            List<Information> originalInfos = GetInformations(delegate(Information info)
                 {
-                    infos.Add(info);
-                }
-            }
-            FilterList(infos);
+                    return filter(info) && regexp.IsMatch(info.DisplayName);
+                });
             PathInformationsWithWindowsInstallerIcons(infos);
             return infos;
         }
 
         public static List<Information> GetInformations(Regex regexp)
         {
-            return GetInformations(regexp, true);
+            return GetInformations(regexp, BaseFilterDelegate);
         }
 
         public static List<Information> GetInformations(string regexpString)
         {
-            return GetInformations(regexpString, true);
+            return GetInformations(regexpString, BaseFilterDelegate);
         }
 
-        public static List<Information> GetInformations(string regexpString, bool OnlyUninstallable)
+        public static List<Information> GetInformations(string regexpString, InformationFilterDelegate filter)
         {
-            return GetInformations(new Regex(regexpString, RegexOptions.IgnoreCase), OnlyUninstallable);
+            return GetInformations(new Regex(regexpString, RegexOptions.IgnoreCase), filter);
         }
 
         #endregion
