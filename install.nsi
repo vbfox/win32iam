@@ -98,6 +98,8 @@ Section Uninstall
   Delete "$INSTDIR\BlackFox.Win32.UninstallInformations.dll"
   Delete "$INSTDIR\VisualUninstaller.exe"
 
+  Delete "$WINDIR\iam.bat"
+  
   Delete "$SMPROGRAMS\Installed Applications Manager.lnk"
 
   RMDir "$INSTDIR"
