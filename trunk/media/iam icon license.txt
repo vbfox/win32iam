@@ -1,0 +1,5 @@
+Base icons from the Tango Project 
+	http://tango.freedesktop.org
+
+The license is Creative Commons Attribution-ShareAlike :
+	http://creativecommons.org/licenses/by-sa/2.5/
