@@ -1,14 +1,18 @@
 <?xml version="1.0"?>
-<project name="BlackFox.UninstallInformations" default="build" basedir=".">
+<project name="InstalledApplicationsManager" default="build" basedir=".">
 	<property name="debug" value="true" overwrite="false" />
 	<property name="build.dir" value="${path::get-full-path('build')}" overwrite="false" />
 	<property name="version-provided" value="${property::exists('version')}" />
+	<property name="build.exename" value="iam" />
 
 	<target name="init">
 		<mkdir dir="${build.dir}" />
 	</target>
 
 	<target name="build" depends="init">
+		<nant buildfile="..\BlackFox.UninstallInformations\BlackFox.UninstallInformations.build"
+			target="build" />
+
 		<if test="${version-provided}">
 			<asminfo language="CSharp" 
 				output="Properties\AssemblyInfo_generated.cs">
@@ -22,8 +26,12 @@
 			</asminfo>
 		</if>
 
-		<csc target="library" output="${build.dir}\${project::get-name()}.dll"
+		<csc target="exe" output="${build.dir}\${build.exename}.exe"
 			debug="${debug}">
+
+			<references>
+				<include name="${build.dir}\BlackFox.UninstallInformation.dll" />
+			</references>
 
 			<sources>
 				<include name="**\*.cs" />
@@ -40,7 +48,10 @@
 	</target>
 
 	<target name="clean">
-		<delete file="${build.dir}\${project::get-name()}.exe" failonerror="false" />
-		<delete file="${build.dir}\${project::get-name()}.pdb" failonerror="false" />
+		<delete file="${build.dir}\${build.exename}.exe" failonerror="false" />
+		<delete file="${build.dir}\${build.exename}.pdb" failonerror="false" />
+
+		<nant buildfile="..\BlackFox.UninstallInformations\BlackFox.UninstallInformations.build"
+			target="clean" />		
 	</target>	
 </project>
