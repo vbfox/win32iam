@@ -145,7 +145,7 @@ namespace BlackFox.Win32.UninstallInformations
 
         public int CompareTo(Information other)
         {
-            return m_displayName.CompareTo(other.m_displayName);
+            return (m_displayName==null) ? 0 : m_displayName.CompareTo(other.m_displayName);
         }
 
         public bool Equals(Information other)

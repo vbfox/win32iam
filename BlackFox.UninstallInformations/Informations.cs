@@ -61,6 +61,7 @@ namespace BlackFox.Win32.UninstallInformations
             Dictionary<string, string> icons = GetWindowsInstallerIcons();
             foreach (Information info in infos)
             {
+                if (info.DisplayName == null) continue;
                 string iconPath;
                 if ( ((info.DisplayIconPath == null) || (info.DisplayIconPath == "")) 
                     && icons.TryGetValue(info.DisplayName, out iconPath) )
@@ -120,12 +121,10 @@ namespace BlackFox.Win32.UninstallInformations
 
         public static List<Information> GetInformations(Regex regexp, InformationFilterDelegate filter)
         {
-            List<Information> infos = new List<Information>();
-            List<Information> originalInfos = GetInformations(delegate(Information info)
+            List<Information> infos = GetInformations(delegate(Information info)
                 {
                     return filter(info) && regexp.IsMatch(info.DisplayName);
                 });
-            PathInformationsWithWindowsInstallerIcons(infos);
             return infos;
         }
 
