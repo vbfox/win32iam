@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<project name="BlackFox.UninstallInformation" default="build" basedir=".">
+	<property name="debug" value="true" overwrite="false" />
+	<property name="build.dir" value="build" overwrite="false" />
+	<property name="version-provided" value="${property::exists('version')}" />
+
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+	</target>
+
+	<target name="build" depends="init">
+		<if test="${version-provided}">
+			<asminfo language="CSharp" 
+				output="Properties\AssemblyInfo_generated.cs">
+				<imports>
+					<import namespace="System.Reflection" />
+				</imports>
+				<attributes>
+					<attribute type="AssemblyTitleAttribute" value="${project::get-name()}" />
+					<attribute type="AssemblyVersionAttribute" value="${version}" />
+				</attributes>
+			</asminfo>
+		</if>
+
+		<csc target="library" output="${build.dir}\${project::get-name()}.dll"
+			debug="${debug}">
+
+			<sources>
+				<include name="**\*.cs" />
+				<exclude name="Properties\AssemblyInfo.cs" 
+					if="${version-provided}"/>
+				<exclude name="Properties\AssemblyInfo_generated.cs" 
+					unless="${version-provided}"/>
+			</sources>
+		</csc>
+
+		<if test="${version-provided}">
+			<delete file="Properties\AssemblyInfo_generated.cs" />
+		</if>
+	</target>
+
+	<target name="clean">
+		<delete file="${build.dir}\${project::get-name()}.exe" failonerror="false" />
+		<delete file="${build.dir}\${project::get-name()}.pdb" failonerror="false" />
+	</target>	
+</project>
