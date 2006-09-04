@@ -1,8 +1,8 @@
-!define BUILD_MODE "Debug"
+!define BUILD_MODE "Release"
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Installed Applications Manager"
-!define PRODUCT_VERSION "0.1"
+!define PRODUCT_VERSION "1.0"
 !define PRODUCT_WEB_SITE "http://www.virtualblackfox.net"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\VisualUninstaller.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
