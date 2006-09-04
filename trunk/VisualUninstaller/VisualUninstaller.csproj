@@ -79,8 +79,5 @@
   <ItemGroup>
     <None Include="Resources\Windows Installer.ICO" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="iam.ico" />
-  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

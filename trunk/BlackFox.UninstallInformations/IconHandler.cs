@@ -49,7 +49,7 @@ namespace BlackFox.Win32
 
         #endregion
 
-        #region Unmanaged Struc & Enums, usefull to call some functions
+        #region DllImports
 
         /// <summary>
         /// Contains information about a file object. 
@@ -70,13 +70,13 @@ namespace BlackFox.Win32
             /// <summary>
             /// Array of values that indicates the attributes of the file object.
             /// For information about these values, see the IShellFolder::GetAttributesOf
-            /// method (In MSDN).
+            /// method.
             /// </summary>
             public uint dwAttributes;
 
             /// <summary>
-            /// String that contains the name of the file as it appears in the Microsoft®
-            /// Windows® Shell, or the path and file name of the file that contains the
+            /// String that contains the name of the file as it appears in the Microsoft
+            /// Windows Shell, or the path and file name of the file that contains the
             /// icon representing the file.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
@@ -92,30 +92,20 @@ namespace BlackFox.Win32
         [Flags]
         enum FileInfoFlags : int
         {
-            SHGFI_ICON = 0x000000100,     // get icon
-            SHGFI_DISPLAYNAME = 0x000000200,     // get display name
-            SHGFI_TYPENAME = 0x000000400,     // get type name
-            SHGFI_ATTRIBUTES = 0x000000800,     // get attributes
-            SHGFI_ICONLOCATION = 0x000001000,     // get icon location
-            SHGFI_EXETYPE = 0x000002000,     // return exe type
-            SHGFI_SYSICONINDEX = 0x000004000,     // get system icon index
-            SHGFI_LINKOVERLAY = 0x000008000,     // put a link overlay on icon
-            SHGFI_SELECTED = 0x000010000,     // show icon in selected state
-            SHGFI_ATTR_SPECIFIED = 0x000020000,     // get only specified attributes
-            SHGFI_LARGEICON = 0x000000000,     // get large icon
-            SHGFI_SMALLICON = 0x000000001,     // get small icon
-            SHGFI_OPENICON = 0x000000002,     // get open icon
-            SHGFI_SHELLICONSIZE = 0x000000004,     // get shell size icon
-            SHGFI_PIDL = 0x000000008,     // pszPath is a pidl
-            SHGFI_USEFILEATTRIBUTES = 0x000000010,     // use passed dwFileAttribute
-            SHGFI_ADDOVERLAYS = 0x000000020,     // apply the appropriate overlays
-            SHGFI_OVERLAYINDEX = 0x000000040,     // Get the index of the overlay in 
-            // the upper 8 bits of the iIcon
+            /// <summary>
+            /// Retrieve the handle to the icon that represents the file and the index 
+            /// of the icon within the system image list. The handle is copied to the 
+            /// hIcon member of the structure specified by psfi, and the index is copied 
+            /// to the iIcon member.
+            /// </summary>
+            SHGFI_ICON = 0x000000100,
+            /// <summary>
+            /// Indicates that the function should not attempt to access the file 
+            /// specified by pszPath. Rather, it should act as if the file specified by 
+            /// pszPath exists with the file attributes passed in dwFileAttributes.
+            /// </summary>
+            SHGFI_USEFILEATTRIBUTES = 0x000000010
         }
-
-        #endregion
-
-        #region DllImports
 
         /// <summary>
         ///     Creates an array of handles to large or small icons extracted from
@@ -357,6 +347,7 @@ namespace BlackFox.Win32
             return size == SystemIconSize.Large ?
                 Icon.FromHandle(Large[0]) : Icon.FromHandle(Small[0]);
         }
+
         public static Icon IconFromExtensionShell(string extension, SystemIconSize size)
         {
             //add '.' if nessesry
