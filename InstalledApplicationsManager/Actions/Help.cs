@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Reflection;
 
 #endregion
 
@@ -34,7 +35,10 @@ namespace BlackFox.InstalledApplicationsManager.Actions
 
         public void Execute(IList<string> parameters)
         {
-            Console.WriteLine("Installed Applications Manager");
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            string versionString = String.Format("{0}.{1}", version.Major, version.Minor);
+
+            Console.WriteLine("Installed Applications Manager v{0}", versionString);
             Console.WriteLine();
             Console.WriteLine("Usage: iam Action [parameter]");
             Console.WriteLine();
