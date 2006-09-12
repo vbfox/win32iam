@@ -25,7 +25,7 @@ using BlackFox.Win32.UninstallInformations;
 
 namespace BlackFox.InstalledApplicationsManager
 {
-    class InformationSelector
+    static class InformationSelector
     {
         public static Information Select(IList<Information> infos)
         {
