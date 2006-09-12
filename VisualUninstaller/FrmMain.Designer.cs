@@ -45,10 +45,14 @@ namespace VisualUninstaller
             // 
             this.findTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.findTextBox.ForeColor = System.Drawing.SystemColors.GrayText;
             this.findTextBox.Location = new System.Drawing.Point(35, 6);
             this.findTextBox.Name = "findTextBox";
             this.findTextBox.Size = new System.Drawing.Size(361, 20);
             this.findTextBox.TabIndex = 0;
+            this.findTextBox.Text = "Search by name";
+            this.findTextBox.Enter += new System.EventHandler(this.findTextBox_Enter);
+            this.findTextBox.Leave += new System.EventHandler(this.findTextBox_Leave);
             this.findTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.findTextBox_KeyPress);
             this.findTextBox.TextChanged += new System.EventHandler(this.findTextBox_TextChanged);
             this.findTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.findTextBox_KeyDown);
