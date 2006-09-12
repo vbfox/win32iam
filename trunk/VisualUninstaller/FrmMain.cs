@@ -46,6 +46,8 @@ namespace VisualUninstaller
         Dictionary<Information, Icon> m_iconCache;
         RegistryUtils.RegistryMonitor m_monitor;
 
+        string m_oldTextBoxContent;
+
         public FrmMain()
         {
             InitializeComponent();
@@ -142,8 +144,12 @@ namespace VisualUninstaller
 
         private void findTextBox_TextChanged(object sender, EventArgs e)
         {
+            if (findTextBox.ForeColor == SystemColors.GrayText) return;
+            if (m_oldTextBoxContent == findTextBox.Text) return;
+
             UpdateInformations();
             UpdateListBox();
+            m_oldTextBoxContent = findTextBox.Text;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -286,10 +292,32 @@ namespace VisualUninstaller
                 RemoveSelectedFromRegistry();
             }
         }
-
+        
         void OnRegChanged(object sender, EventArgs e)
         {
             MessageBox.Show("hello world");
+        }
+        
+        #endregion
+
+        #region Gray text in textbox
+
+        private void findTextBox_Enter(object sender, EventArgs e)
+        {
+            if (findTextBox.ForeColor == SystemColors.GrayText)
+            {
+                findTextBox.ForeColor = SystemColors.WindowText;
+                findTextBox.Text = "";
+            }
+        }
+
+        private void findTextBox_Leave(object sender, EventArgs e)
+        {
+            if (findTextBox.Text.Trim() == "")
+            {
+                findTextBox.ForeColor = SystemColors.GrayText;
+                findTextBox.Text = "Search by name";
+            }
         }
 
         #endregion
