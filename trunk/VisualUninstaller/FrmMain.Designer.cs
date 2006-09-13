@@ -37,6 +37,7 @@ namespace VisualUninstaller
             this.removefromthelistToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeSelectedBtn = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.versionLabel = new System.Windows.Forms.Label();
             this.programsContextMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -122,11 +123,22 @@ namespace VisualUninstaller
             this.pictureBox1.TabIndex = 7;
             this.pictureBox1.TabStop = false;
             // 
+            // versionLabel
+            // 
+            this.versionLabel.AutoSize = true;
+            this.versionLabel.ForeColor = System.Drawing.SystemColors.GrayText;
+            this.versionLabel.Location = new System.Drawing.Point(10, 338);
+            this.versionLabel.Name = "versionLabel";
+            this.versionLabel.Size = new System.Drawing.Size(41, 13);
+            this.versionLabel.TabIndex = 8;
+            this.versionLabel.Text = "version";
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(408, 363);
+            this.Controls.Add(this.versionLabel);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.removeSelectedBtn);
             this.Controls.Add(this.programsList);
@@ -153,6 +165,7 @@ namespace VisualUninstaller
         private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem removefromthelistToolStripMenuItem;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Label versionLabel;
     }
 }
 
