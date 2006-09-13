@@ -30,6 +30,7 @@ using System.Text.RegularExpressions;
 using System.Resources;
 using RegistryUtils;
 using Microsoft.Win32;
+using System.Reflection;
 
 namespace VisualUninstaller
 {
@@ -67,6 +68,12 @@ namespace VisualUninstaller
             m_monitor.RegistryKey = Informations.Key;
             m_monitor.RegChanged += new EventHandler(OnRegChanged);
             m_monitor.Start();
+        }
+
+        void UpdateVersionLabel()
+        {
+            Version v = Assembly.GetExecutingAssembly().GetName().Version;
+            versionLabel.Text = string.Format("Version {0}.{1}", v.Major, v.Minor);
         }
 
         void BuildIconCache()
@@ -140,6 +147,7 @@ namespace VisualUninstaller
         private void Form1_Load(object sender, EventArgs e)
         {
             UpdateListBox();
+            UpdateVersionLabel();
         }
 
         private void findTextBox_TextChanged(object sender, EventArgs e)
