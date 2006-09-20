@@ -31,13 +31,13 @@ namespace VisualUninstaller
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
             this.findTextBox = new System.Windows.Forms.TextBox();
-            this.programsList = new System.Windows.Forms.ListBox();
             this.programsContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removefromthelistToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeSelectedBtn = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.versionLabel = new System.Windows.Forms.Label();
+            this.placeholderPanel = new System.Windows.Forms.Panel();
             this.programsContextMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -57,25 +57,6 @@ namespace VisualUninstaller
             this.findTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.findTextBox_KeyPress);
             this.findTextBox.TextChanged += new System.EventHandler(this.findTextBox_TextChanged);
             this.findTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.findTextBox_KeyDown);
-            // 
-            // programsList
-            // 
-            this.programsList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.programsList.ContextMenuStrip = this.programsContextMenu;
-            this.programsList.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.programsList.FormattingEnabled = true;
-            this.programsList.IntegralHeight = false;
-            this.programsList.ItemHeight = 34;
-            this.programsList.Location = new System.Drawing.Point(12, 33);
-            this.programsList.Name = "programsList";
-            this.programsList.Size = new System.Drawing.Size(384, 287);
-            this.programsList.TabIndex = 1;
-            this.programsList.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.programsList_MouseDoubleClick);
-            this.programsList.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.programsList_DrawItem);
-            this.programsList.SelectedIndexChanged += new System.EventHandler(this.programsList_SelectedIndexChanged);
-            this.programsList.MouseDown += new System.Windows.Forms.MouseEventHandler(this.programsList_MouseDown);
             // 
             // programsContextMenu
             // 
@@ -127,21 +108,28 @@ namespace VisualUninstaller
             // 
             this.versionLabel.AutoSize = true;
             this.versionLabel.ForeColor = System.Drawing.SystemColors.GrayText;
-            this.versionLabel.Location = new System.Drawing.Point(10, 338);
+            this.versionLabel.Location = new System.Drawing.Point(12, 333);
             this.versionLabel.Name = "versionLabel";
             this.versionLabel.Size = new System.Drawing.Size(41, 13);
             this.versionLabel.TabIndex = 8;
             this.versionLabel.Text = "version";
+            // 
+            // placeholderPanel
+            // 
+            this.placeholderPanel.Location = new System.Drawing.Point(12, 32);
+            this.placeholderPanel.Name = "placeholderPanel";
+            this.placeholderPanel.Size = new System.Drawing.Size(384, 289);
+            this.placeholderPanel.TabIndex = 9;
             // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(408, 363);
-            this.Controls.Add(this.versionLabel);
+            this.Controls.Add(this.placeholderPanel);
             this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.versionLabel);
             this.Controls.Add(this.removeSelectedBtn);
-            this.Controls.Add(this.programsList);
             this.Controls.Add(this.findTextBox);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FrmMain";
@@ -159,13 +147,13 @@ namespace VisualUninstaller
         #endregion
 
         private System.Windows.Forms.TextBox findTextBox;
-        private System.Windows.Forms.ListBox programsList;
         private System.Windows.Forms.Button removeSelectedBtn;
         private System.Windows.Forms.ContextMenuStrip programsContextMenu;
         private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem removefromthelistToolStripMenuItem;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label versionLabel;
+        private System.Windows.Forms.Panel placeholderPanel;
     }
 }
 

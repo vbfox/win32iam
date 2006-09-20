@@ -36,63 +36,50 @@ namespace VisualUninstaller
 {
     public partial class FrmMain : Form
     {
-        static readonly Color SELECTED_BG_COLOR = Color.FromArgb(61, 128, 223);
-        static readonly Color SELECTED_TEXT_COLOR = Color.White;
-        static readonly Color BG_COLOR = Color.White;
-        static readonly Color BG_COLOR_ALT = Color.FromArgb(237, 243, 254);
-        static readonly Color TEXT_COLOR = Color.Black;
 
-        List<Information> m_infos;
-        List<Information> m_displayedInfos;
-        Dictionary<Information, Icon> m_iconCache;
-        RegistryUtils.RegistryMonitor m_monitor;
+        /*RegistryUtils.RegistryMonitor m_monitor;*/
 
         string m_oldTextBoxContent;
-
+        
+        ProgramsListBox m_programsListBox = new ProgramsListBox();
+        
         public FrmMain()
         {
             InitializeComponent();
 
-            // All informations in registry
-            m_infos = Informations.GetInformations();
-
-            //Information displayed (Filter applied)
-            m_displayedInfos = new List<Information>();
-            m_displayedInfos.AddRange(m_infos);
-
-            // Building icon cache
-            m_iconCache = new Dictionary<Information, Icon>();
-            BuildIconCache();
-
+            /*
             m_monitor = new RegistryMonitor();
             m_monitor.RegistryKey = Informations.Key;
             m_monitor.RegChanged += new EventHandler(OnRegChanged);
             m_monitor.Start();
+            */
+            
+            m_programsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            m_programsListBox.BackColor = System.Drawing.Color.White;
+            m_programsListBox.ContextMenuStrip = this.programsContextMenu;
+            m_programsListBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            m_programsListBox.FormattingEnabled = true;
+            m_programsListBox.IntegralHeight = false;
+            m_programsListBox.ItemHeight = 34;
+            m_programsListBox.Location = placeholderPanel.Location;
+            m_programsListBox.Name = "m_programsListBox";
+            m_programsListBox.Size = placeholderPanel.Size;
+            m_programsListBox.TabIndex = 1;
+            m_programsListBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.programsList_MouseDoubleClick);
+            m_programsListBox.SelectedIndexChanged += new System.EventHandler(this.programsList_SelectedIndexChanged);
+            m_programsListBox.MouseDown += new System.Windows.Forms.MouseEventHandler(this.programsList_MouseDown);
+            this.Controls.Add(m_programsListBox);
+
+            placeholderPanel.Visible = false;
+            
         }
 
         void UpdateVersionLabel()
         {
             Version v = Assembly.GetExecutingAssembly().GetName().Version;
             versionLabel.Text = string.Format("Version {0}.{1}", v.Major, v.Minor);
-        }
-
-        void BuildIconCache()
-        {
-            foreach (Information info in m_infos)
-            {
-                m_iconCache[info] = info.Icon;
-            }
-        }
-
-        void UpdateListBox()
-        {
-            programsList.Items.Clear();
-            foreach (Information info in m_displayedInfos)
-            {
-                programsList.Items.Add(info);
-            }
-            programsList.SelectedIndex = (programsList.Items.Count > 0) ? 0 : -1;
-            programsList_SelectedIndexChanged(this, new EventArgs());
         }
 
         /// <summary>
@@ -110,43 +97,10 @@ namespace VisualUninstaller
             return new Regex(result.ToString(), RegexOptions.IgnoreCase); 
         }
 
-        void UpdateInformations()
-        {
-            Regex regexp = GetRegexpFromTextBox();
-
-            m_displayedInfos.Clear();
-            foreach (Information info in m_infos)
-            {
-                if (regexp.IsMatch(info.DisplayName))
-                {
-                    m_displayedInfos.Add(info);
-                }
-            }
-        }
-
-        void UninstallSelected()
-        {
-            Information selected = (Information)programsList.SelectedItem;
-            if (selected != null)
-            {
-                selected.Uninstall();
-            }
-        }
-
-        void RemoveSelectedFromRegistry()
-        {
-            Information selected = (Information)programsList.SelectedItem;
-            if (selected != null)
-            {
-                selected.RemoveFromRegistry();
-            }
-        }
-
         #region Events
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            UpdateListBox();
             UpdateVersionLabel();
         }
 
@@ -155,104 +109,40 @@ namespace VisualUninstaller
             if (findTextBox.ForeColor == SystemColors.GrayText) return;
             if (m_oldTextBoxContent == findTextBox.Text) return;
 
-            UpdateInformations();
-            UpdateListBox();
+            m_programsListBox.SetFilter(GetRegexpFromTextBox());
+
             m_oldTextBoxContent = findTextBox.Text;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            UninstallSelected();
+            m_programsListBox.UninstallSelected();
         }
 
         private void programsList_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            UninstallSelected();
+            m_programsListBox.UninstallSelected();
         }
 
         private void programsList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            removeSelectedBtn.Enabled = (programsList.SelectedItem != null);
-        }
-
-        private void programsList_DrawItem(object sender, DrawItemEventArgs e)
-        {
-            if (e.Index >= 0)
-            {
-                Information info = (Information)programsList.Items[e.Index];
-
-                /*
-                 * On détermine la position du texte.
-                 */
-                int y = e.Bounds.Top;
-                y += (int)(e.Bounds.Height / 2);
-                y -= (int)(e.Graphics.MeasureString(info.DisplayName, e.Font).Height / 2);
-                PointF textPoint = new PointF(e.Bounds.Left + 35, y);
-
-                /*
-                 * On détermine les couleurs du fond et du texte
-                 */
-                Color textColor;
-                Color bgColor;
-                if ((e.State & DrawItemState.Selected) != 0)
-                {
-                    bgColor = SELECTED_BG_COLOR;
-                    textColor = SELECTED_TEXT_COLOR;
-                }
-                else
-                {
-                    textColor = TEXT_COLOR;
-                    if (e.Index % 2 == 0)
-                    {
-                        bgColor = BG_COLOR_ALT;
-                    }
-                    else
-                    {
-                        bgColor = BG_COLOR;
-                    }
-                }
-
-                /*
-                 * On détermine l'icone
-                 */
-                Icon icon;
-                if (m_iconCache[info] != null)
-                {
-                    icon = m_iconCache[info];
-                }
-                else
-                {
-                    icon = Properties.Resources.Windows_Installer;
-                }
-
-
-                /*
-                 * Affichage
-                 */
-                e.Graphics.FillRectangle(new SolidBrush(bgColor), e.Bounds);
-                e.Graphics.DrawString(info.DisplayName, this.Font, new SolidBrush(textColor), textPoint);
-                e.Graphics.DrawIcon(icon, new Rectangle(e.Bounds.Left+1, e.Bounds.Top+1, 32, 32));
-            }
+            removeSelectedBtn.Enabled = (m_programsListBox.SelectedItem != null);
         }
 
         private void findTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // La touche entrée lance la désinstallation si il n'y as qu'un
-            // seul programme listé.
+            // La touche entrée lance la désinstallation du programme sélectionné
             if (e.KeyChar == '\r')
             {
                 e.Handled = true;
-                if (programsList.Items.Count == 1)
-                {
-                    ((Information)programsList.Items[0]).Uninstall();
-                }
+                m_programsListBox.UninstallSelected();
             }
         }
 
         private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
         {
             // Désactive les menus si rien n'est sélectionné
-            bool itemSelected = programsList.SelectedIndex >= 0;
+            bool itemSelected = m_programsListBox.SelectedIndex >= 0;
             removeToolStripMenuItem.Enabled = itemSelected;
             removefromthelistToolStripMenuItem.Enabled = itemSelected;
         }
@@ -261,17 +151,17 @@ namespace VisualUninstaller
         {
             if (e.Button == MouseButtons.Right)
             {
-                int itemIndex = programsList.IndexFromPoint(e.X, e.Y);
+                int itemIndex = m_programsListBox.IndexFromPoint(e.X, e.Y);
                 if (itemIndex >= 0)
                 {
-                    if (itemIndex != programsList.SelectedIndex)
+                    if (itemIndex != m_programsListBox.SelectedIndex)
                     {
-                        programsList.SelectedIndex = itemIndex;
+                        m_programsListBox.SelectedIndex = itemIndex;
                     }
                 }
                 else
                 {
-                    programsList.SelectedIndex = -1;
+                    m_programsListBox.SelectedIndex = -1;
                 }
 
             }
@@ -281,29 +171,32 @@ namespace VisualUninstaller
         {
             if (e.KeyCode == Keys.Down)
             {
-                programsList.Focus();
+                if (m_programsListBox.SelectedIndex < m_programsListBox.Items.Count - 1)
+                    m_programsListBox.SelectedIndex += 1;
+                e.Handled = true;
+            }
+            else if (e.KeyCode == Keys.Up)
+            {
+                if (m_programsListBox.SelectedIndex > 0)
+                    m_programsListBox.SelectedIndex -= 1;
+                e.Handled = true;
             }
         }
 
         private void removeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            UninstallSelected();
+            m_programsListBox.UninstallSelected();
         }
 
         private void removefromthelistToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Information selected = (Information)programsList.SelectedItem;
+            Information selected = (Information)m_programsListBox.SelectedItem;
             string questionText = string.Format("Are you sure to remove the installer of \"{0}\" from the uninstall list, without uninstalling it ?", selected.DisplayName);
             if (MessageBox.Show(questionText, "Visual Uninstaller - Remove from the uninstall list",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                RemoveSelectedFromRegistry();
+                m_programsListBox.RemoveSelectedFromRegistry();
             }
-        }
-        
-        void OnRegChanged(object sender, EventArgs e)
-        {
-            MessageBox.Show("hello world");
         }
         
         #endregion
