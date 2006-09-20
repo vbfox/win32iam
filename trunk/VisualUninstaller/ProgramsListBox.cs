@@ -1,3 +1,23 @@
+/*
+ * VisualUninstaller - Add/Remove programs replacement
+ * 
+ * Copyright (C) 2006 Julien Roncaglia
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -5,6 +25,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using BlackFox.Win32.UninstallInformations;
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 
 namespace VisualUninstaller
 {
@@ -45,14 +66,18 @@ namespace VisualUninstaller
         {
             if (m.Msg == WM_ERASEBKGND)
             {
-                IntPtr hdc = m.WParam;
-                Graphics g = Graphics.FromHdcInternal(hdc);
-
-                int itemsHeight = Items.Count * this.ItemHeight;
-                int toDraw = ClientSize.Height - itemsHeight;
-
-                if (toDraw > 0)
+                int maxItemsOnScreen = (int)(ClientSize.Height / ItemHeight);
+                int bottomIndex = TopIndex + maxItemsOnScreen;
+                bool atEndOfListBox = bottomIndex > Items.Count-1;
+                if (atEndOfListBox)
                 {
+                    IntPtr hdc = m.WParam;
+                    Graphics g = Graphics.FromHdcInternal(hdc);
+
+                    int itemsOnScreen = Math.Min(Items.Count, maxItemsOnScreen);
+                    int itemsHeight = itemsOnScreen * this.ItemHeight;
+
+                    int toDraw = ClientSize.Height - itemsHeight;
                     g.FillRectangle(new SolidBrush(this.BackColor),
                         ClientRectangle.Left,
                         ClientRectangle.Top + itemsHeight,
@@ -62,6 +87,7 @@ namespace VisualUninstaller
                 m.Result = (IntPtr)1;
                 return;
             }
+
             base.WndProc(ref m);
         }
 
@@ -69,8 +95,6 @@ namespace VisualUninstaller
         {
             if (e.Index >= 0)
             {
-                Bitmap b = new Bitmap(e.Bounds.Width, e.Bounds.Width);
-                Graphics g = Graphics.FromImage(b);
                 Information info = (Information)Items[e.Index];
 
                 /*
@@ -120,11 +144,12 @@ namespace VisualUninstaller
                 /*
                  * Affichage
                  */
-
-                g.FillRectangle(new SolidBrush(bgColor), 0, 0, e.Bounds.Width, e.Bounds.Height);
-                g.DrawString(info.DisplayName, this.Font, new SolidBrush(textColor), textPoint);
-                g.DrawIcon(icon, new Rectangle(1, 1, 32, 32));
-                e.Graphics.DrawImageUnscaled(b, e.Bounds.X, e.Bounds.Y);
+                
+                e.Graphics.FillRectangle(new SolidBrush(bgColor), e.Bounds.Left, e.Bounds.Top, e.Bounds.Width, e.Bounds.Height);
+                textPoint.X += e.Bounds.X;
+                textPoint.Y += e.Bounds.Y;
+                e.Graphics.DrawString(info.DisplayName, this.Font, new SolidBrush(textColor), textPoint);
+                e.Graphics.DrawIcon(icon, new Rectangle(1 + e.Bounds.X, 1 + e.Bounds.Y, 32, 32));
             }
         }
 
@@ -177,13 +202,14 @@ namespace VisualUninstaller
                 }
                 else
                 {
-                    if (Items.Count > 0) SelectedIndex = 0;
+                    if (Items.Count == 1) SelectedIndex = 0;
                 }
             }
             finally
             {
                 EndUpdate();
             }
+            OnSelectedIndexChanged(EventArgs.Empty);
         }
     }
 }
