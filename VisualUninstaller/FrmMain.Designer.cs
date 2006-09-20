@@ -106,6 +106,7 @@ namespace VisualUninstaller
             // 
             // versionLabel
             // 
+            this.versionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.versionLabel.AutoSize = true;
             this.versionLabel.ForeColor = System.Drawing.SystemColors.GrayText;
             this.versionLabel.Location = new System.Drawing.Point(12, 333);
