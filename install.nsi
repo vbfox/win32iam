@@ -2,7 +2,9 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Installed Applications Manager"
-!define PRODUCT_VERSION "1.1"
+!ifndef PRODUCT_VERSION
+	!define PRODUCT_VERSION "1.1"
+!endif
 !define PRODUCT_WEB_SITE "http://www.virtualblackfox.net"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\VisualUninstaller.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -40,8 +42,12 @@ SetCompressor lzma
 
 ; MUI end ------
 
+!ifndef BUILD_FOLDER
+	!define BUILD_FOLDER "."
+!endif
+
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "Install ${PRODUCT_NAME} ${PRODUCT_VERSION}.exe"
+OutFile "${BUILD_FOLDER}\win32iam_${PRODUCT_VERSION}_Setup.exe"
 InstallDir "$PROGRAMFILES\Installed Applications Manager"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show

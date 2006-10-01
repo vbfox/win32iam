@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<project name="Application Uninstaller" default="full" basedir=".">
+	<property name="debug" value="false" overwrite="false" />
+	<property name="build.dir" value="${path::get-full-path('build')}" overwrite="false" />
+
+	<script language="C#" prefix="file" >
+		<code>
+		<![CDATA[
+			[Function("read-all-text")]
+			public static string ReadAllText(string fileName)
+			{
+				return File.ReadAllText(fileName);
+			}
+		]]>
+		</code>
+	</script>
+
+	<property name="version" value="${string::trim(file::read-all-text('version.txt'))}" 
+		if="${file::exists('version.txt')}" />
+	<property name="version-provided" value="${property::exists('version')}" />
+
+	<target name="full">
+		<call target="clean" />
+		<call target="build" />
+		<call target="create-zip" />
+		<call target="create-source-zip" />
+		<call target="create-install" />
+		<!--<call target="make-coffee" />-->
+	</target>
+
+	<target name="create-install" depends="init">
+		<!-- Bug in exec\arg task : It evaluate the value before executing the "if" -->
+		<property name="version-arg" value="/DPRODUCT_VERSION=${version}" if="${version-provided}" />
+		<property name="version-arg" value="" unless="${version-provided}" />
+
+		<exec program="makensis.exe">
+			<arg value="${version-arg}" if="${version-provided}" />
+			<arg value="/DBUILD_FOLDER=${build.dir}" />
+			<arg value="install.nsi" />
+		</exec>
+	</target>
+
+	<target name="create-zip" depends="init">
+		<property name="zip-file-name" value="win32iam.zip" unless="${version-provided}" />
+		<property name="zip-file-name" value="win32iam_${version}.zip" if="${version-provided}" />
+		<zip zipfile="build\${zip-file-name}">
+			<fileset basedir="build">
+				<include name="BlackFox.UninstallInformations.dll" />
+				<include name="VisualUninstaller.exe" />
+				<include name="iam.exe" />
+			</fileset>
+			<fileset>
+				<include name="COPYING.TXT" />
+			</fileset>
+		</zip>
+	</target>
+
+	<target name="create-source-zip" depends="init">
+		<property name="zip-file-name" value="win32iam_Srcs.zip" unless="${version-provided}" />
+		<property name="zip-file-name" value="win32iam_${version}_Srcs.zip" if="${version-provided}" />
+		<zip zipfile="build\${zip-file-name}">
+			<fileset>
+				<include name="**/*" />
+				<exclude name="**/build/*" />
+				<exclude name="**/obj/**/*" />
+				<exclude name="**/bin/**/*" />
+				<exclude name="**/*.suo" />
+				<exclude name="**/*.user" />
+				<exclude name="**/*.exe" />
+				<exclude name="**/*.zip" />
+				<exclude name="**/*.pdb" />
+			</fileset>
+		</zip>
+	</target>
+
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+	</target>
+
+	<target name="build" depends="init">
+		<nant buildfile="BlackFox.UninstallInformations\BlackFox.UninstallInformations.build" target="build" />
+		<nant buildfile="InstalledApplicationsManager\InstalledApplicationsManager.build" target="build" />
+		<nant buildfile="VisualUninstaller\VisualUninstaller.build" target="build" />
+	</target>
+
+	<target name="clean">
+		<nant buildfile="VisualUninstaller\VisualUninstaller.build" target="clean" />
+		<nant buildfile="InstalledApplicationsManager\InstalledApplicationsManager.build" target="clean" />
+		<nant buildfile="BlackFox.UninstallInformations\BlackFox.UninstallInformations.build" target="clean" />
+
+		<delete dir="${build.dir}" />
+	</target>	
+</project>
