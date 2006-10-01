@@ -35,7 +35,7 @@
     <Compile Include="Actions\ListApps.cs" />
     <Compile Include="Actions\Remove.cs" />
     <Compile Include="Actions\Search.cs" />
-    <Compile Include="InformationSelector.cs" />
+    <Compile Include="InformationsUtils.cs" />
     <Compile Include="IAction.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
