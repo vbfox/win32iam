@@ -3,21 +3,23 @@
 	<property name="debug" value="false" overwrite="false" />
 	<property name="build.dir" value="${path::get-full-path('build')}" overwrite="false" />
 
-	<script language="C#" prefix="file" >
-		<code>
-		<![CDATA[
-			[Function("read-all-text")]
-			public static string ReadAllText(string fileName)
-			{
-				return File.ReadAllText(fileName);
-			}
-		]]>
-		</code>
-	</script>
-
-	<property name="version" value="${string::trim(file::read-all-text('version.txt'))}" 
-		if="${file::exists('version.txt')}" />
+	<loadfile file="version.txt" property="version" if="${file::exists('version.txt')}" />
+	<property name="version" value="${string::trim(version)}" if="${property::exists('version')}" />
 	<property name="version-provided" value="${property::exists('version')}" />
+
+	<target name="send-to-sourceforge">
+		<loadtasks path="external\NantFTPTask" />
+		<connection id="sourceforge" 
+			server="upload.sourceforge.net" 
+			username="anonymous" 
+			password="somebody@exemple.com" />
+		<ftp connection="sourceforge" >
+			<put type="bin" localdir="${build.dir}" remotedir="incoming" flatten="true">
+				<include name="*.zip" />
+				<include name="*_Setup.exe" />
+			</put>
+		</ftp>
+	</target>
 
 	<target name="full">
 		<call target="clean" />
@@ -25,7 +27,6 @@
 		<call target="create-zip" />
 		<call target="create-source-zip" />
 		<call target="create-install" />
-		<!--<call target="make-coffee" />-->
 	</target>
 
 	<target name="create-install" depends="init">
