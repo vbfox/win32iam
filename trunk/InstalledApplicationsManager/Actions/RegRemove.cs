@@ -55,7 +55,7 @@ namespace BlackFox.InstalledApplicationsManager.Actions
                     }
                     else
                     {
-                        selectedInformation = InformationSelector.Select(infos);
+                        selectedInformation = InformationsUtils.SelectInformation(infos);
                         sureToRemove = true;
                     }
 
