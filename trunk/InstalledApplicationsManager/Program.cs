@@ -42,7 +42,14 @@ namespace BlackFox.InstalledApplicationsManager
             {
                 actionParameters.Add(args[i]);
             }
-            ActionManager.ExecuteAction(actionName, actionParameters);
+            try
+            {
+                ActionManager.ExecuteAction(actionName, actionParameters);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error: {0}", e.Message);
+            }
         }
     }
 }
