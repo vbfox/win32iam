@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<project name="InstalledApplicationsManager" default="build" basedir=".">
+<project name="Visual Uninstaller" default="build" basedir=".">
 	<property name="debug" value="true" overwrite="false" />
 	<property name="build.dir" value="${path::get-full-path('build')}" overwrite="false" />
 	<property name="version-provided" value="${property::exists('version')}" />
-	<property name="build.exename" value="iam" />
+	<property name="build.exename" value="VisualUninstaller" />
 
 	<target name="init">
 		<mkdir dir="${build.dir}" />
@@ -26,8 +26,8 @@
 			</asminfo>
 		</if>
 
-		<csc target="exe" output="${build.dir}\${build.exename}.exe"
-			debug="${debug}">
+		<csc target="winexe" output="${build.dir}\${build.exename}.exe"
+			debug="${debug}" win32icon="..\media\iam.ico">
 
 			<references>
 				<include name="${build.dir}\BlackFox.UninstallInformations.dll" />
@@ -40,6 +40,10 @@
 				<exclude name="Properties\AssemblyInfo_generated.cs" 
 					unless="${version-provided}"/>
 			</sources>
+
+			<resources prefix="VisualUninstaller" dynamicprefix="true">
+				<include name="**\*.resx" />
+			</resources>
 		</csc>
 
 		<if test="${version-provided}">
