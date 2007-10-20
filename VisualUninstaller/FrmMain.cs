@@ -28,7 +28,6 @@ using System.Windows.Forms;
 using BlackFox.Win32.UninstallInformations;
 using System.Text.RegularExpressions;
 using System.Resources;
-using RegistryUtils;
 using Microsoft.Win32;
 using System.Reflection;
 
@@ -36,9 +35,6 @@ namespace VisualUninstaller
 {
     public partial class FrmMain : Form
     {
-
-        /*RegistryUtils.RegistryMonitor m_monitor;*/
-
         string m_oldTextBoxContent;
         
         ProgramsListBox m_programsListBox = new ProgramsListBox();
@@ -47,13 +43,6 @@ namespace VisualUninstaller
         {
             InitializeComponent();
 
-            /*
-            m_monitor = new RegistryMonitor();
-            m_monitor.RegistryKey = Informations.Key;
-            m_monitor.RegChanged += new EventHandler(OnRegChanged);
-            m_monitor.Start();
-            */
-            
             m_programsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -74,6 +63,11 @@ namespace VisualUninstaller
 
             placeholderPanel.Visible = false;
             
+        }
+
+        void OnRegChanged(Object o, EventArgs e)
+        {
+            MessageBox.Show("changed.");
         }
 
         void UpdateVersionLabel()

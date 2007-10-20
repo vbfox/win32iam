@@ -49,13 +49,11 @@ namespace VisualUninstaller
             // All informations in registry
             m_infos = Informations.GetInformations();
 
-            //Information displayed (Filter applied)
+            //Information displayed (Filter applied, we start with no filter)
             m_displayedInfos = new List<Information>();
             m_displayedInfos.AddRange(m_infos);
 
-            // Building icon cache
             m_iconCache = new Dictionary<Information, Icon>();
-            BuildIconCache();
 
             DrawItem += new System.Windows.Forms.DrawItemEventHandler(__DrawItem);
         }
@@ -98,14 +96,14 @@ namespace VisualUninstaller
                 Information info = (Information)Items[e.Index];
 
                 /*
-                 * On détermine la position du texte.
+                 * Find where to put the text
                  */
                 int y = (int)(e.Bounds.Height / 2);
                 y -= (int)(e.Graphics.MeasureString(info.DisplayName, e.Font).Height / 2);
                 PointF textPoint = new PointF(35, y);
 
                 /*
-                 * On détermine les couleurs du fond et du texte
+                 * Text & background colors
                  */
                 Color textColor;
                 Color bgColor;
@@ -128,7 +126,15 @@ namespace VisualUninstaller
                 }
 
                 /*
-                 * On détermine l'icone
+                 * If the icon isn't in the cache we add it.
+                 */
+                if (!m_iconCache.ContainsKey(info))
+                {
+                    m_iconCache[info] = info.Icon;
+                }
+
+                /*
+                 * If an icon is known we use it, otherwise we use the default one.
                  */
                 Icon icon;
                 if (m_iconCache[info] != null)
@@ -142,7 +148,7 @@ namespace VisualUninstaller
 
 
                 /*
-                 * Affichage
+                 * Display
                  */
                 
                 e.Graphics.FillRectangle(new SolidBrush(bgColor), e.Bounds.Left, e.Bounds.Top, e.Bounds.Width, e.Bounds.Height);
@@ -150,14 +156,6 @@ namespace VisualUninstaller
                 textPoint.Y += e.Bounds.Y;
                 e.Graphics.DrawString(info.DisplayName, this.Font, new SolidBrush(textColor), textPoint);
                 e.Graphics.DrawIcon(icon, new Rectangle(1 + e.Bounds.X, 1 + e.Bounds.Y, 32, 32));
-            }
-        }
-
-        void BuildIconCache()
-        {
-            foreach (Information info in m_infos)
-            {
-                m_iconCache[info] = info.Icon;
             }
         }
 

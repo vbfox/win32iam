@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual C# Express 2005
+# Visual Studio 2005
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.UninstallInformations", "BlackFox.UninstallInformations\BlackFox.UninstallInformations.csproj", "{8369D015-82CA-4D29-800C-2AB9888DC6F9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstalledApplicationsManager", "InstalledApplicationsManager\InstalledApplicationsManager.csproj", "{2651D3DF-AD69-4E5D-90C9-EF9BF76DE6C9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualUninstaller", "VisualUninstaller\VisualUninstaller.csproj", "{D4D70847-3BC5-49E0-88CD-1447E63535C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.Win32", "BlackFox.Win32\BlackFox.Win32.csproj", "{2DB0D72E-32E9-4C5E-AB29-3071182A9160}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmallTest", "SmallTest\SmallTest.csproj", "{F339456F-B3B6-4369-9B50-AA372E48CA97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +29,14 @@ Global
 		{D4D70847-3BC5-49E0-88CD-1447E63535C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4D70847-3BC5-49E0-88CD-1447E63535C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4D70847-3BC5-49E0-88CD-1447E63535C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DB0D72E-32E9-4C5E-AB29-3071182A9160}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DB0D72E-32E9-4C5E-AB29-3071182A9160}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DB0D72E-32E9-4C5E-AB29-3071182A9160}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DB0D72E-32E9-4C5E-AB29-3071182A9160}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F339456F-B3B6-4369-9B50-AA372E48CA97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F339456F-B3B6-4369-9B50-AA372E48CA97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F339456F-B3B6-4369-9B50-AA372E48CA97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F339456F-B3B6-4369-9B50-AA372E48CA97}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -71,12 +71,15 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="RegistryMonitor.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BlackFox.UninstallInformations\BlackFox.UninstallInformations.csproj">
       <Project>{8369D015-82CA-4D29-800C-2AB9888DC6F9}</Project>
       <Name>BlackFox.UninstallInformations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlackFox.Win32\BlackFox.Win32.csproj">
+      <Project>{2DB0D72E-32E9-4C5E-AB29-3071182A9160}</Project>
+      <Name>BlackFox.Win32</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
