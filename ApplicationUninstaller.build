@@ -29,6 +29,10 @@
 		<call target="create-install" />
 	</target>
 
+	<target name="full-release" depends="full">
+		<call target="send-to-sourceforge" />
+	</target>
+
 	<target name="create-install" depends="init">
 		<!-- Bug in exec\arg task : It evaluate the value before executing the "if" -->
 		<property name="version-arg" value="/DPRODUCT_VERSION=${version}" if="${version-provided}" />
@@ -47,6 +51,7 @@
 		<zip zipfile="build\${zip-file-name}">
 			<fileset basedir="build">
 				<include name="BlackFox.UninstallInformations.dll" />
+				<include name="BlackFox.Win32.dll" />
 				<include name="VisualUninstaller.exe" />
 				<include name="iam.exe" />
 			</fileset>
@@ -79,7 +84,6 @@
 	</target>
 
 	<target name="build" depends="init">
-		<nant buildfile="BlackFox.UninstallInformations\BlackFox.UninstallInformations.build" target="build" />
 		<nant buildfile="InstalledApplicationsManager\InstalledApplicationsManager.build" target="build" />
 		<nant buildfile="VisualUninstaller\VisualUninstaller.build" target="build" />
 	</target>
@@ -87,7 +91,6 @@
 	<target name="clean">
 		<nant buildfile="VisualUninstaller\VisualUninstaller.build" target="clean" />
 		<nant buildfile="InstalledApplicationsManager\InstalledApplicationsManager.build" target="clean" />
-		<nant buildfile="BlackFox.UninstallInformations\BlackFox.UninstallInformations.build" target="clean" />
 
 		<delete dir="${build.dir}" />
 	</target>	
