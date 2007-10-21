@@ -125,27 +125,19 @@ namespace VisualUninstaller
                     }
                 }
 
-                /*
-                 * If the icon isn't in the cache we add it.
-                 */
-                if (!m_iconCache.ContainsKey(info))
-                {
-                    m_iconCache[info] = info.Icon;
-                }
-
-                /*
-                 * If an icon is known we use it, otherwise we use the default one.
-                 */
                 Icon icon;
-                if (m_iconCache[info] != null)
+                if (!m_iconCache.TryGetValue(info, out icon))
                 {
-                    icon = m_iconCache[info];
+                    if (info.Icon != null)
+                    {
+                        icon = info.Icon;
+                    }
+                    else
+                    {
+                        icon = Properties.Resources.Windows_Installer;
+                    }
+                    m_iconCache[info] = icon;
                 }
-                else
-                {
-                    icon = Properties.Resources.Windows_Installer;
-                }
-
 
                 /*
                  * Display
@@ -159,39 +151,44 @@ namespace VisualUninstaller
             }
         }
 
+        public Information SelectedInfo
+        {
+            get
+            {
+                return (Information)SelectedItem;
+            }
+        }
+
         public void UninstallSelected()
         {
-            Information selected = (Information)SelectedItem;
-            if (selected != null)
+            if (SelectedInfo != null)
             {
-                selected.Uninstall();
+                SelectedInfo.Uninstall();
             }
         }
 
         public void RemoveSelectedFromRegistry()
         {
-            Information selected = (Information)SelectedItem;
-            if (selected != null)
+            if (SelectedInfo != null)
             {
-                selected.RemoveFromRegistry();
+                SelectedInfo.RemoveFromRegistry();
             }
         }
 
         public void SetFilter(Regex regexFilter)
         {
-            Information selectedInfo = (Information)SelectedItem;
+            Information selectedInfo = SelectedInfo;
+            Predicate<Information> filerPredicate = delegate(Information i) { return regexFilter.IsMatch(i.DisplayName); };
+            // C# 3.0: var filterPredicate = (Information i) => regexFilter.IsMatch(i.DisplayName);
 
             BeginUpdate();
             try
             {
 
                 Items.Clear();
-                foreach (Information info in m_infos)
+                foreach (Information info in Utils.Filter(m_infos, filerPredicate))
                 {
-                    if (regexFilter.IsMatch(info.DisplayName))
-                    {
-                        Items.Add(info);
-                    }
+                    Items.Add(info);
                 }
 
                 if ((selectedInfo != null) && (Items.Contains(selectedInfo)))
