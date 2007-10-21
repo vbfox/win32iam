@@ -175,18 +175,23 @@ namespace VisualUninstaller
             }
         }
 
+        public IEnumerable<Information> GetFilteredInfos(Regex regexFilter)
+        {
+            Predicate<Information> filerPredicate = delegate(Information i) { return regexFilter.IsMatch(i.DisplayName); };
+            return Utils.Filter(m_infos, filerPredicate);
+
+            // return m_infos.Select((Information i) => regexFilter.IsMatch(i.DisplayName));
+        }
+
         public void SetFilter(Regex regexFilter)
         {
             Information selectedInfo = SelectedInfo;
-            Predicate<Information> filerPredicate = delegate(Information i) { return regexFilter.IsMatch(i.DisplayName); };
-            // C# 3.0: var filterPredicate = (Information i) => regexFilter.IsMatch(i.DisplayName);
 
             BeginUpdate();
             try
             {
-
                 Items.Clear();
-                foreach (Information info in Utils.Filter(m_infos, filerPredicate))
+                foreach (Information info in GetFilteredInfos(regexFilter))
                 {
                     Items.Add(info);
                 }
@@ -195,10 +200,7 @@ namespace VisualUninstaller
                 {
                     SelectedItem = selectedInfo;
                 }
-                else
-                {
-                    if (Items.Count == 1) SelectedIndex = 0;
-                }
+                if (Items.Count == 1) SelectedIndex = 0;
             }
             finally
             {
