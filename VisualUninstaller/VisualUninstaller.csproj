@@ -71,6 +71,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BlackFox.UninstallInformations\BlackFox.UninstallInformations.csproj">
@@ -81,9 +82,6 @@
       <Project>{2DB0D72E-32E9-4C5E-AB29-3071182A9160}</Project>
       <Name>BlackFox.Win32</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Windows Installer.ICO" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
