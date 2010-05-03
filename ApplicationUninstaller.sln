@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.UninstallInformations", "BlackFox.UninstallInformations\BlackFox.UninstallInformations.csproj", "{8369D015-82CA-4D29-800C-2AB9888DC6F9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstalledApplicationsManager", "InstalledApplicationsManager\InstalledApplicationsManager.csproj", "{2651D3DF-AD69-4E5D-90C9-EF9BF76DE6C9}"
