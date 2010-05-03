@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace VisualUninstaller.Properties {
+namespace BlackFox.Win32.UninstallInformations.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

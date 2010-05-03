@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace VisualUninstaller.Properties {
+namespace BlackFox.InstalledApplicationsManager.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace VisualUninstaller.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("VisualUninstaller.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("BlackFox.InstalledApplicationsManager.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,13 +57,6 @@ namespace VisualUninstaller.Properties {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        internal static System.Drawing.Icon Windows_Installer {
-            get {
-                object obj = ResourceManager.GetObject("Windows_Installer", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
             }
         }
     }
