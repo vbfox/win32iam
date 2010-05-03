@@ -327,40 +327,41 @@ namespace BlackFox.Win32
             if (extension[0] != '.') extension = '.' + extension;
 
             //opens the registry for the wanted key.
-            RegistryKey Root = Registry.ClassesRoot;
-            RegistryKey ExtensionKey = Root.OpenSubKey(extension);
-            ExtensionKey.GetValueNames();
-            RegistryKey ApplicationKey =
-                Root.OpenSubKey(ExtensionKey.GetValue("").ToString());
+            var root = Registry.ClassesRoot;
+            var extensionKey = root.OpenSubKey(extension);
+
+            var applicationKey =
+                root.OpenSubKey(extensionKey.GetValue("").ToString());
 
             //gets the name of the file that have the icon.
             string IconLocation =
-                ApplicationKey.OpenSubKey("DefaultIcon").GetValue("").ToString();
+                applicationKey.OpenSubKey("DefaultIcon").GetValue("").ToString();
             string[] IconPath = IconLocation.Split(',');
 
             if (IconPath[1] == null) IconPath[1] = "0";
-            IntPtr[] Large = new IntPtr[1], Small = new IntPtr[1];
+            IntPtr[] large = new IntPtr[1], small = new IntPtr[1];
 
             //extracts the icon from the file.
             ExtractIconEx(IconPath[0],
-                Convert.ToInt16(IconPath[1]), Large, Small, 1);
+                Convert.ToInt16(IconPath[1]), large, small, 1);
             return size == SystemIconSize.Large ?
-                Icon.FromHandle(Large[0]) : Icon.FromHandle(Small[0]);
+                Icon.FromHandle(large[0]) : Icon.FromHandle(small[0]);
         }
 
         public static Icon IconFromExtensionShell(string extension, SystemIconSize size)
         {
-            //add '.' if nessesry
-            if (extension[0] != '.') extension = '.' + extension;
+            if (string.IsNullOrEmpty(extension))
+            {
+                throw new ArgumentException("The extension should not be null or empty", "extension");
+            }
 
-            //temp struct for getting file shell info
-            SHFILEINFO fileInfo = new SHFILEINFO();
+            if ((extension.Length == 0) && (extension[0] != '.'))
+            {
+                extension = '.' + extension;
+            }
 
-            SHGetFileInfo(
-                extension,
-                0,
-                out fileInfo,
-                Marshal.SizeOf(fileInfo),
+            var fileInfo = new SHFILEINFO();
+            SHGetFileInfo(extension, 0, out fileInfo, Marshal.SizeOf(fileInfo),
                 FileInfoFlags.SHGFI_ICON | FileInfoFlags.SHGFI_USEFILEATTRIBUTES | (FileInfoFlags)size);
 
             return Icon.FromHandle(fileInfo.hIcon);
@@ -368,9 +369,10 @@ namespace BlackFox.Win32
 
         public static Icon IconFromResource(string resourceName)
         {
-            Assembly assembly = Assembly.GetCallingAssembly();
+            var assembly = Assembly.GetCallingAssembly();
+            var stream = assembly.GetManifestResourceStream(resourceName);
 
-            return new Icon(assembly.GetManifestResourceStream(resourceName));
+            return new Icon(stream);
         }
 
         /// <summary>
