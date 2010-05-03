@@ -40,26 +40,30 @@ namespace BlackFox.Win32.UninstallInformations
 
         static Dictionary<string, string> GetWindowsInstallerIcons()
         {
-            Dictionary<string, string> result = new Dictionary<string, string>();
-            using (RegistryKey wiProducts = Registry.ClassesRoot.OpenSubKey(@"Installer\Products"))
+            var result = new Dictionary<string, string>();
+            using (var wiProducts = Registry.ClassesRoot.OpenSubKey(@"Installer\Products"))
             {
-                foreach (string subKeyName in wiProducts.GetSubKeyNames())
-                    using (RegistryKey subKey = wiProducts.OpenSubKey(subKeyName))
+                foreach (var subKeyName in wiProducts.GetSubKeyNames())
+                {
+                    using (var subKey = wiProducts.OpenSubKey(subKeyName))
                     {
-                        string iconPath = (string)subKey.GetValue("ProductIcon");
-                        if (iconPath != null)
+                        var productIcon = subKey.GetValue("ProductIcon") as string;
+                        var productName = subKey.GetValue("ProductName") as string;
+
+                        if ( (productIcon != null) && (productName != null) && !result.ContainsKey(productName))
                         {
-                            result.Add((string)subKey.GetValue("ProductName"), iconPath);
+                            result.Add(productName, productIcon);
                         }
                     }
+                }
             }
             return result;
         }
 
         static void PathInformationsWithWindowsInstallerIcons(List<Information> infos)
         {
-            Dictionary<string, string> icons = GetWindowsInstallerIcons();
-            foreach (Information info in infos)
+            var icons = GetWindowsInstallerIcons();
+            foreach (var info in infos)
             {
                 if (info.DisplayName == null) continue;
                 string iconPath;
