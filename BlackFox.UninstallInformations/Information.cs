@@ -185,7 +185,7 @@ namespace BlackFox.Win32.UninstallInformations
         {
             get
             {
-                if ( (m_displayIconPath != null) && (m_displayIconPath != "") )
+                if (!string.IsNullOrEmpty(m_displayIconPath))
                 {
                     try
                     {

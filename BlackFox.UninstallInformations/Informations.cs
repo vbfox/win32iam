@@ -23,17 +23,20 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace BlackFox.Win32.UninstallInformations
 {
     static public class Informations
     {
-        public static RegistryKey Key
+        public static RegistryKey OpenUninstallKey()
         {
-            get
-            {
-                return Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
-            }
+            return Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
+        }
+
+        public static RegistryKey OpenUninstallKeyWow6432()
+        {
+            return Registry.LocalMachine.OpenSubKey(@"Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall");
         }
 
         #region Windows Installer Icons
@@ -81,25 +84,38 @@ namespace BlackFox.Win32.UninstallInformations
 
         public delegate bool InformationFilterDelegate(Information info);
 
-        public static List<Information> GetInformations(InformationFilterDelegate filter)
+        static IEnumerable<Information> EnumerateInformationsFromKey(RegistryKey key, InformationFilterDelegate filter)
         {
-            
-            List<Information> infos = new List<Information>();
-            
-            using (RegistryKey uninstallKey = Key)
+            if (key == null) yield break;
+            try
             {
-                foreach (string subKeyName in uninstallKey.GetSubKeyNames())
+                foreach (string subKeyName in key.GetSubKeyNames())
                 {
-                    using (RegistryKey subKey = uninstallKey.OpenSubKey(subKeyName))
+                    using (var subKey = key.OpenSubKey(subKeyName, false))
                     {
-                        Information info = new Information(subKey);
+                        if (subKey == null) continue;
+
+                        var info = new Information(subKey);
                         if (filter(info))
                         {
-                            infos.Add(info);
+                            yield return info;
                         }
                     }
                 }
             }
+            finally
+            {
+                key.Close();
+            }
+        }
+
+        public static IEnumerable<Information> GetInformations(InformationFilterDelegate filter)
+        {
+            var infos = new List<Information>();
+
+            infos.AddRange(EnumerateInformationsFromKey(OpenUninstallKey(), filter));
+            infos.AddRange(EnumerateInformationsFromKey(OpenUninstallKeyWow6432(), filter));
+
             infos.Sort();
             PathInformationsWithWindowsInstallerIcons(infos);
             return infos;
@@ -118,31 +134,27 @@ namespace BlackFox.Win32.UninstallInformations
             }
         }
 
-        public static List<Information> GetInformations()
+        public static IEnumerable<Information> GetInformations()
         {
             return GetInformations(BaseFilterDelegate);
         }
 
-        public static List<Information> GetInformations(Regex regexp, InformationFilterDelegate filter)
+        public static IEnumerable<Information> GetInformations(Regex regexp, InformationFilterDelegate filter)
         {
-            List<Information> infos = GetInformations(delegate(Information info)
-                {
-                    return filter(info) && regexp.IsMatch(info.DisplayName);
-                });
-            return infos;
+            return GetInformations(info => filter(info) && regexp.IsMatch(info.DisplayName));
         }
 
-        public static List<Information> GetInformations(Regex regexp)
+        public static IEnumerable<Information> GetInformations(Regex regexp)
         {
             return GetInformations(regexp, BaseFilterDelegate);
         }
 
-        public static List<Information> GetInformations(string regexpString)
+        public static IEnumerable<Information> GetInformations(string regexpString)
         {
             return GetInformations(regexpString, BaseFilterDelegate);
         }
 
-        public static List<Information> GetInformations(string regexpString, InformationFilterDelegate filter)
+        public static IEnumerable<Information> GetInformations(string regexpString, InformationFilterDelegate filter)
         {
             return GetInformations(new Regex(regexpString, RegexOptions.IgnoreCase), filter);
         }
