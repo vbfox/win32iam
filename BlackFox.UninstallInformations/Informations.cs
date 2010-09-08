@@ -29,14 +29,14 @@ namespace BlackFox.Win32.UninstallInformations
 {
     static public class Informations
     {
-        public static RegistryKey OpenUninstallKey()
+        public static RegistryKey OpenUninstallKey(RegistryKey hive)
         {
-            return Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
+            return hive.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
         }
 
-        public static RegistryKey OpenUninstallKeyWow6432()
+        public static RegistryKey OpenUninstallKeyWow6432(RegistryKey hive)
         {
-            return Registry.LocalMachine.OpenSubKey(@"Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall");
+            return hive.OpenSubKey(@"Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall");
         }
 
         #region Windows Installer Icons
@@ -113,8 +113,10 @@ namespace BlackFox.Win32.UninstallInformations
         {
             var infos = new List<Information>();
 
-            infos.AddRange(EnumerateInformationsFromKey(OpenUninstallKey(), filter));
-            infos.AddRange(EnumerateInformationsFromKey(OpenUninstallKeyWow6432(), filter));
+            infos.AddRange(EnumerateInformationsFromKey(OpenUninstallKey(Registry.LocalMachine), filter));
+            infos.AddRange(EnumerateInformationsFromKey(OpenUninstallKeyWow6432(Registry.LocalMachine), filter));
+            infos.AddRange(EnumerateInformationsFromKey(OpenUninstallKey(Registry.CurrentUser), filter));
+            infos.AddRange(EnumerateInformationsFromKey(OpenUninstallKeyWow6432(Registry.CurrentUser), filter));
 
             infos.Sort();
             PathInformationsWithWindowsInstallerIcons(infos);
