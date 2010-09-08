@@ -18,17 +18,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#region Using directives
-
-using System;
-using System.Collections.Generic;
-using System.Text;
-using BlackFox.Win32.UninstallInformations;
-
-#endregion
-
 namespace BlackFox.InstalledApplicationsManager.Actions
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using BlackFox.Win32.UninstallInformations;
+
     public class RegRemove : IAction
     {
 
@@ -44,7 +40,7 @@ namespace BlackFox.InstalledApplicationsManager.Actions
             if (parameters.Count > 0)
             {
                 Information selectedInformation;
-                IList<Information> infos = Informations.GetInformations(parameters[0]);
+                IList<Information> infos = Informations.GetInformations(parameters[0]).ToList();
                 if (infos.Count > 0)
                 {
                     bool sureToRemove;

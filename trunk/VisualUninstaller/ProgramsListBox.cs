@@ -18,17 +18,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using System.Drawing;
-using BlackFox.Win32.UninstallInformations;
-using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
-
 namespace VisualUninstaller
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+    using System.Windows.Forms;
+    using BlackFox.Win32.UninstallInformations;
+
     class ProgramsListBox : ListBox
     {
         static readonly Color SELECTED_BG_COLOR = Color.FromArgb(61, 128, 223);
@@ -47,7 +46,7 @@ namespace VisualUninstaller
             SetStyle(ControlStyles.ResizeRedraw, true);
 
             // All informations in registry
-            m_infos = Informations.GetInformations();
+            m_infos = Informations.GetInformations().ToList();
 
             //Information displayed (Filter applied, we start with no filter)
             m_displayedInfos = new List<Information>();
@@ -136,6 +135,7 @@ namespace VisualUninstaller
                     {
                         icon = Properties.Resources.Windows_Installer;
                     }
+                    
                     m_iconCache[info] = icon;
                 }
 

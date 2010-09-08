@@ -1,7 +1,7 @@
 ﻿/*
  * InstalledApplicationManager
  * 
- * Copyright (C) 2006 Julien Roncaglia
+ * Copyright (C) 2006-2010 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,27 +18,20 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#region Using directives
-
-using System;
-using System.Collections.Generic;
-using System.Text;
-using BlackFox.Win32.UninstallInformations;
-
-#endregion
-
 namespace BlackFox.InstalledApplicationsManager.Actions
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using BlackFox.Win32.UninstallInformations;
+
     public class Search : IAction
     {
-
-        #region IAction Members
-
         public void Execute(IList<string> parameters)
         {
             if (parameters.Count > 0)
             {
-                List<Information> infos = Informations.GetInformations(parameters[0]);
+                List<Information> infos = Informations.GetInformations(parameters[0]).ToList();
                 if (infos.Count > 0)
                 {
                     foreach (Information info in infos)
@@ -62,8 +55,6 @@ namespace BlackFox.InstalledApplicationsManager.Actions
             get { return 1; }
         }
 
-        #endregion
-
         public static string Name { get { return "search"; } }
-}
+    }
 }
