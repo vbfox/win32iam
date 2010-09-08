@@ -1,7 +1,7 @@
 /*
  * UninstallInformations
  * 
- * Copyright (C) 2006 Julien Roncaglia
+ * Copyright (C) 2006-2010 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,23 +18,24 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-using System;
-using System.Drawing;
-using System.Runtime.InteropServices;
-using Microsoft.Win32;
-using System.Reflection;
-using System.Collections.Generic;
-
 namespace BlackFox.Win32
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Drawing;
+    using System.Reflection;
+    using System.Runtime.InteropServices;
+    using Microsoft.Win32;
+
     public static class Icons
     {
         #region Custom exceptions class
 
         public class IconNotFoundException : Exception
         {
-            public IconNotFoundException(string fileName, int index)
-                : base(string.Format("Icon with Id = {0} wasn't found in file {1}", index, fileName))
+            public IconNotFoundException(string fileName, int index, Exception innerException)
+                : base(string.Format("Icon with Id = {0} wasn't found in file {1}", index, fileName), innerException)
             {
             }
         }
@@ -293,72 +294,139 @@ namespace BlackFox.Win32
                 List<Icon> iconList = ExtractEx(fileName, size, index, 1);
                 return iconList[0];            
             }
-            catch (UnableToExtractIconsException)
+            catch (UnableToExtractIconsException e)
             {
-                throw new IconNotFoundException(fileName, index);
+                throw new IconNotFoundException(fileName, index, e);
             }
         }
 
         public static void ExtractOne(string fileName, int index,
             out Icon largeIcon, out Icon smallIcon)
         {
-            List<Icon> smallIconList = new List<Icon>();
-            List<Icon> largeIconList = new List<Icon>();
+            var smallIconList = new List<Icon>();
+            var largeIconList = new List<Icon>();
             try
             {
                 ExtractEx(fileName, largeIconList, smallIconList, index, 1);
                 largeIcon = largeIconList[0];
                 smallIcon = smallIconList[0];
             }
-            catch (UnableToExtractIconsException)
+            catch (UnableToExtractIconsException e)
             {
-                throw new IconNotFoundException(fileName, index);
+                throw new IconNotFoundException(fileName, index, e);
             }
         }
 
         #endregion
 
-        //this will look throw the registry 
-        //to find if the Extension have an icon.
-        public static Icon IconFromExtension(string extension,
-                                                SystemIconSize size)
+        static string GetExtensionIconStringFromKeyUsingDefaultIcon(RegistryKey key)
         {
-            // Add the '.' to the extension if needed
-            if (extension[0] != '.') extension = '.' + extension;
+            Debug.Assert(key != null);
 
-            //opens the registry for the wanted key.
-            var root = Registry.ClassesRoot;
-            var extensionKey = root.OpenSubKey(extension);
+            using (var defaultIconKey = key.OpenSubKey("DefaultIcon", false))
+            {
+                if (defaultIconKey == null) return null;
+                
+                var value = defaultIconKey.GetValue(null);
+                if (value == null) return null;
 
-            var applicationKey =
-                root.OpenSubKey(extensionKey.GetValue("").ToString());
-
-            //gets the name of the file that have the icon.
-            string IconLocation =
-                applicationKey.OpenSubKey("DefaultIcon").GetValue("").ToString();
-            string[] IconPath = IconLocation.Split(',');
-
-            if (IconPath[1] == null) IconPath[1] = "0";
-            IntPtr[] large = new IntPtr[1], small = new IntPtr[1];
-
-            //extracts the icon from the file.
-            ExtractIconEx(IconPath[0],
-                Convert.ToInt16(IconPath[1]), large, small, 1);
-            return size == SystemIconSize.Large ?
-                Icon.FromHandle(large[0]) : Icon.FromHandle(small[0]);
+                return value.ToString();
+            }
         }
 
-        public static Icon IconFromExtensionShell(string extension, SystemIconSize size)
+        static string GetExtensionIconStringFromKeyFromClsid(RegistryKey classesRootKey, string clsid)
         {
-            if (string.IsNullOrEmpty(extension))
+            Debug.Assert(classesRootKey != null);
+            Debug.Assert(clsid != null);
+
+            using (var clsidKey = classesRootKey.OpenSubKey("CLSID", false))
             {
-                throw new ArgumentException("The extension should not be null or empty", "extension");
+                if (clsidKey == null) return null;
+
+                using (var applicationClsidKey = clsidKey.OpenSubKey(clsid, false))
+                {
+                    if (applicationClsidKey == null) return null;
+
+                    return GetExtensionIconStringFromKeyUsingDefaultIcon(applicationClsidKey);
+                }
+            }
+        }
+
+        static string GetExtensionIconStringFromKeyUsingClsid(RegistryKey key)
+        {
+            Debug.Assert(key != null);
+
+            string applicationClsid;
+            using (var clsidKey = key.OpenSubKey("CLSID", false))
+            {
+                if (clsidKey == null) return null;
+
+                var value = clsidKey.GetValue(null);
+                if (value == null) return null;
+
+                applicationClsid = value.ToString();
             }
 
-            if ((extension.Length == 0) && (extension[0] != '.'))
+            using (var classesRootKey = Registry.ClassesRoot)
             {
-                extension = '.' + extension;
+                var fromNormalClsid = GetExtensionIconStringFromKeyFromClsid(classesRootKey, applicationClsid);
+                if (fromNormalClsid != null) return fromNormalClsid;
+
+                using (var wow6432ClassesRootKey = classesRootKey.OpenSubKey("Wow6432Node"))
+                {
+                    if (wow6432ClassesRootKey == null) return null;
+
+                    return GetExtensionIconStringFromKeyFromClsid(wow6432ClassesRootKey, applicationClsid);
+                }
             }
+        }
+
+        static string GetExtensionIconStringFromRegistry(string extension)
+        {
+            Debug.Assert(extension != null);
+            Debug.Assert(extension.Length > 1);
+            Debug.Assert(extension.StartsWith("."));
+
+            using(var classesRootKey = Registry.ClassesRoot)
+            using(var extensionKey = classesRootKey.OpenSubKey(extension, false))
+            {
+                if (extensionKey == null) return null;
+
+                var fileTypeObject = extensionKey.GetValue(null);
+                if (fileTypeObject == null) return null;
+
+                using(var applicationKey = classesRootKey.OpenSubKey(fileTypeObject.ToString(), false))
+                {
+                    var result = GetExtensionIconStringFromKeyUsingClsid(applicationKey);
+                    if (result == null)
+                    {
+                        result = GetExtensionIconStringFromKeyUsingDefaultIcon(applicationKey);
+                    }
+
+                    return result;
+                }
+            }
+        }
+        
+        public static Icon IconFromExtensionUsingRegistry(string extension, SystemIconSize size)
+        {
+            if (extension == null) throw new ArgumentNullException("extension");
+            if (extension.Length == 0 || extension == ".") throw new ArgumentException("Empty extension", "extension");
+
+            if (extension[0] != '.') extension = '.' + extension;
+
+            var iconLocation = GetExtensionIconStringFromRegistry(extension);
+            if (iconLocation == null) return null;
+
+            return ExtractFromRegistryString(iconLocation, size);
+        }
+
+        public static Icon IconFromExtension(string extension, SystemIconSize size)
+        {
+            if (extension == null) throw new ArgumentNullException("extension");
+            if (extension.Length == 0 || extension == ".") throw new ArgumentException("Empty extension", "extension");
+
+            if (extension[0] != '.') extension = '.' + extension;
 
             var fileInfo = new SHFILEINFO();
             SHGetFileInfo(extension, 0, out fileInfo, Marshal.SizeOf(fileInfo),
@@ -385,15 +453,9 @@ namespace BlackFox.Win32
         public static void ExtractInformationsFromRegistryString(
             string regString, out string fileName, out int index)
         {
-            if (regString == null)
-            {
-                throw new ArgumentNullException("regString");
-            }
-            if (regString.Length == 0)
-            {
-                throw new ArgumentException("The string should not be empty.", "regString");
-            }
-
+            if (regString == null) throw new ArgumentNullException("regString");
+            if (regString.Length == 0) throw new ArgumentException("Empty regString", "regString");
+            
             index = 0;
             string[] strArr = regString.Replace("\"", "").Split(',');
             fileName = strArr[0].Trim();
@@ -408,7 +470,14 @@ namespace BlackFox.Win32
             string fileName;
             int index;
             ExtractInformationsFromRegistryString(regString, out fileName, out index);
-            return ExtractOne(fileName, index, size);
+            try
+            {
+                return ExtractOne(fileName, index, size);
+            }
+            catch (IconNotFoundException)
+            {
+                return null;
+            }
         }
     }
 }
