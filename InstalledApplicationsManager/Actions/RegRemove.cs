@@ -1,6 +1,6 @@
 ﻿/*
  * InstalledApplicationManager
- * 
+ *
  * Copyright (C) 2006 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
@@ -27,10 +27,9 @@ namespace BlackFox.InstalledApplicationsManager.Actions
 
     public class RegRemove : IAction
     {
-        public int ParametersCount
-        {
-            get { return 1; }
-        }
+        public static string Name => "regremove";
+
+        public int ParametersCount => 1;
 
         public void Execute(IList<string> parameters)
         {
@@ -57,12 +56,12 @@ namespace BlackFox.InstalledApplicationsManager.Actions
                         if (!sureToRemove)
                         {
                             Console.WriteLine("Are you sure to remove the installer of \"{0}\"\r\nfrom the uninstall list, without removing \"{0}\" ? (y/n)", selectedInformation.DisplayName);
-                            char answer = Console.ReadKey(true).KeyChar;
-                            sureToRemove = (answer == 'y');
+                            var answer = Console.ReadKey(true).KeyChar;
+                            sureToRemove = answer == 'y';
                         }
+
                         if (sureToRemove)
                         {
-
                             Console.WriteLine(string.Format("\"{0}\" removed from uninstall list.", selectedInformation.DisplayName));
                             selectedInformation.RemoveFromRegistry();
                         }
@@ -74,8 +73,5 @@ namespace BlackFox.InstalledApplicationsManager.Actions
                 }
             }
         }
-
-
-        public static string Name { get { return "regremove"; } }
-}
+    }
 }

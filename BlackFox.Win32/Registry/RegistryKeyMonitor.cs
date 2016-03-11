@@ -1,132 +1,170 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Win32.SafeHandles;
-using System.Runtime.InteropServices;
-using System.Security.AccessControl;
-using System.Threading;
-using System.ComponentModel;
-
-namespace BlackFox.Win32
+namespace BlackFox.Win32.Registry
 {
-    public enum RegistryKeyWatch { KeyOnly, KeyAndSubKeys };
+    using System;
+    using System.ComponentModel;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Security.AccessControl;
+    using System.Threading;
+    using BlackFox.Win32.Registry.Enums;
 
+    [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder")]
     public class RegistryKeyMonitor : IDisposable
     {
-        public delegate void KeyChangedDelegate(RegistryKeyMonitor monitor, bool keyDeleted);
         public delegate void ExceptionRaisedDelegate(RegistryKeyMonitor monitor, Exception e);
 
-        KeyChangedDelegate m_keyChanged;
-        ExceptionRaisedDelegate m_exceptionRaised;
+        public delegate void KeyChangedDelegate(RegistryKeyMonitor monitor, bool keyDeleted);
 
-        RegistryHive m_hive;
-        public RegistryHive RegistryHive { get { return m_hive; } }
+        #pragma warning disable SA1310 // Field names must not contain underscore
+        private const RegistryNotifyFilter ALL_FILTERS = RegistryNotifyFilter.Attribute
+                                                         | RegistryNotifyFilter.Key
+                                                         | RegistryNotifyFilter.Security
+                                                         | RegistryNotifyFilter.Value;
 
-        string m_key;
-        public string Key { get { return m_key; } }
+        private const int ERROR_FILE_NOT_FOUND = 2;
+#pragma warning restore SA1310 // Field names must not contain underscore
 
-        bool m_watchSubTree;
-        bool WatchSubTree { get { return m_watchSubTree; } }
+        private readonly bool disposed = false;
+        private readonly ExceptionRaisedDelegate exceptionRaised;
 
-        RegistryNotifyFilter m_filter;
-        RegistryNotifyFilter Filter { get { return m_filter; } }
+        private readonly KeyChangedDelegate keyChanged;
+        private readonly ManualResetEvent stopEvent = new ManualResetEvent(false);
+        private SafeRegistryHandle registryHandle;
 
-        const RegistryNotifyFilter ALL_FILTERS = RegistryNotifyFilter.Attribute
-            | RegistryNotifyFilter.Key
-            | RegistryNotifyFilter.Security
-            | RegistryNotifyFilter.Value;
+        private Thread thread;
 
-        const int ERROR_FILE_NOT_FOUND = 2;
-        bool KeyStillExists
+        public RegistryKeyMonitor(
+            RegistryHive hive,
+            string key,
+            KeyChangedDelegate keyChanged,
+            ExceptionRaisedDelegate exceptionRaised)
+            : this(hive, key, ALL_FILTERS, keyChanged, exceptionRaised)
+        {
+        }
+
+        public RegistryKeyMonitor(
+            RegistryHive hive,
+            string key,
+            RegistryNotifyFilter filter,
+            KeyChangedDelegate keyChanged,
+            ExceptionRaisedDelegate exceptionRaised)
+            : this(hive, key, filter, RegistryKeyWatch.KeyAndSubKeys, keyChanged, exceptionRaised)
+        {
+        }
+
+        public RegistryKeyMonitor(
+            RegistryHive hive,
+            string key,
+            RegistryNotifyFilter filter,
+            RegistryKeyWatch watch,
+            KeyChangedDelegate keyChanged,
+            ExceptionRaisedDelegate exceptionRaised)
+        {
+            if (keyChanged == null)
+            {
+                throw new ArgumentNullException(nameof(keyChanged));
+            }
+
+            if (exceptionRaised == null)
+            {
+                throw new ArgumentNullException(nameof(exceptionRaised));
+            }
+
+            RegistryHive = hive;
+            Key = key;
+            Filter = filter;
+            WatchSubTree = watch == RegistryKeyWatch.KeyAndSubKeys;
+            this.keyChanged = keyChanged;
+            this.exceptionRaised = exceptionRaised;
+
+            StartMonitor();
+        }
+
+        public RegistryHive RegistryHive { get; }
+
+        public string Key { get; }
+
+        public bool WatchSubTree { get; }
+
+        private RegistryNotifyFilter Filter { get; }
+
+        private bool KeyStillExists
         {
             get
             {
                 try
                 {
-                    (new SafeRegistryHandle(m_hive, m_key, RegistryRights.Notify)).Close();
+                    new SafeRegistryHandle(RegistryHive, Key, RegistryRights.Notify).Close();
                     return true;
                 }
                 catch (Win32Exception ex)
                 {
-                    if (ex.NativeErrorCode == ERROR_FILE_NOT_FOUND) return false;
+                    if (ex.NativeErrorCode == ERROR_FILE_NOT_FOUND)
+                    {
+                        return false;
+                    }
+
                     throw;
                 }
             }
         }
 
-        public RegistryKeyMonitor(RegistryHive hive, string key, KeyChangedDelegate keyChanged,
-            ExceptionRaisedDelegate exceptionRaised)
-            : this(hive, key, ALL_FILTERS, keyChanged, exceptionRaised) { }
-
-        public RegistryKeyMonitor(RegistryHive hive, string key, RegistryNotifyFilter filter,
-            KeyChangedDelegate keyChanged, ExceptionRaisedDelegate exceptionRaised)
-            : this(hive, key, filter, RegistryKeyWatch.KeyAndSubKeys, keyChanged, exceptionRaised) { }
-
-        public RegistryKeyMonitor(RegistryHive hive, string key, RegistryNotifyFilter filter, RegistryKeyWatch watch,
-            KeyChangedDelegate keyChanged, ExceptionRaisedDelegate exceptionRaised)
+        public void Dispose()
         {
-            if (keyChanged == null) throw new ArgumentNullException("keyChanged");
-            if (exceptionRaised == null) throw new ArgumentNullException("exceptionRaised");
+            if (disposed)
+            {
+                throw new ObjectDisposedException("RegistryKeyMonitor");
+            }
 
-            m_hive = hive;
-            m_key = key;
-            m_filter = filter;
-            m_watchSubTree = (watch == RegistryKeyWatch.KeyAndSubKeys);
-            m_keyChanged = keyChanged;
-            m_exceptionRaised = exceptionRaised;
-
-            StartMonitor();
+            stopEvent.Set();
+            thread.Join();
+            registryHandle.Dispose();
         }
 
-        Thread m_thread;
-        SafeRegistryHandle m_registryHandle;
-        ManualResetEvent m_stopEvent = new ManualResetEvent(false);
-
-        void StartMonitor()
+        private void StartMonitor()
         {
-            m_registryHandle = new SafeRegistryHandle(m_hive, m_key, RegistryRights.Notify);
-            m_thread = new Thread(ThreadStart);
-            m_thread.Start();
+            registryHandle = new SafeRegistryHandle(RegistryHive, Key, RegistryRights.Notify);
+            thread = new Thread(ThreadStart);
+            thread.Start();
         }
 
-        void ThreadStart()
+        private void ThreadStart()
         {
             try
             {
-                AutoResetEvent notifyEvent = new AutoResetEvent(false);
-                WaitHandle[] waitHandles = new WaitHandle[] { m_stopEvent, notifyEvent };
-                int waitResult = 0;
+                var notifyEvent = new AutoResetEvent(false);
+                var waitHandles = new WaitHandle[] { stopEvent, notifyEvent };
+                int waitResult;
                 do
                 {
-                    int notifyResult = UnsafeNativeMethods.RegNotifyChangeKeyValue(m_registryHandle,
-                        m_watchSubTree, m_filter, notifyEvent.SafeWaitHandle, true);
-                    if (notifyResult != 0) throw new Win32Exception(notifyResult);
+                    int notifyResult = UnsafeNativeMethods.RegNotifyChangeKeyValue(
+                        registryHandle,
+                        WatchSubTree,
+                        Filter,
+                        notifyEvent.SafeWaitHandle,
+                        true);
+
+                    if (notifyResult != 0)
+                    {
+                        throw new Win32Exception(notifyResult);
+                    }
 
                     waitResult = WaitHandle.WaitAny(waitHandles);
                     if (waitResult == 1)
                     {
                         bool deleted = !KeyStillExists;
-                        m_keyChanged(this, deleted);
-                        if (deleted) return;
+                        keyChanged(this, deleted);
+                        if (deleted)
+                        {
+                            return;
+                        }
                     }
                 }
                 while (waitResult != 0);
             }
             catch (Exception e)
             {
-                m_exceptionRaised(this, e);
+                exceptionRaised(this, e);
             }
-        }
-
-        bool m_disposed = false;
-
-        public void Dispose()
-        {
-            if (m_disposed) throw new ObjectDisposedException("RegistryKeyMonitor");
-
-            m_stopEvent.Set();
-            m_thread.Join();
-            m_registryHandle.Dispose();
         }
     }
 }

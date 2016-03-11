@@ -1,6 +1,6 @@
 ﻿/*
  * InstalledApplicationManager
- * 
+ *
  * Copyright (C) 2006 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
@@ -18,11 +18,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-using System;
-using System.Collections.Generic;
-
 namespace BlackFox.InstalledApplicationsManager
 {
+    using System;
+    using System.Collections.Generic;
+
     internal class Program
     {
         private static void Main(string[] args)
@@ -34,10 +34,11 @@ namespace BlackFox.InstalledApplicationsManager
             }
 
             var actionParameters = new List<string>();
-            for(var i = 1; i < args.Length; i++)
+            for (var i = 1; i < args.Length; i++)
             {
                 actionParameters.Add(args[i]);
             }
+
             try
             {
                 ActionManager.ExecuteAction(actionName, actionParameters);

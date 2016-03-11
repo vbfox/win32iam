@@ -27,7 +27,7 @@ namespace VisualUninstaller
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
+            var resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
             this.findTextBox = new System.Windows.Forms.TextBox();
             this.programsContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -50,11 +50,11 @@ namespace VisualUninstaller
             this.findTextBox.Size = new System.Drawing.Size(361, 20);
             this.findTextBox.TabIndex = 0;
             this.findTextBox.Text = "Search by name";
-            this.findTextBox.Enter += new System.EventHandler(this.findTextBox_Enter);
-            this.findTextBox.Leave += new System.EventHandler(this.findTextBox_Leave);
-            this.findTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.findTextBox_KeyPress);
-            this.findTextBox.TextChanged += new System.EventHandler(this.findTextBox_TextChanged);
-            this.findTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.findTextBox_KeyDown);
+            this.findTextBox.Enter += new System.EventHandler(this.FindTextBoxEnter);
+            this.findTextBox.Leave += new System.EventHandler(this.FindTextBoxLeave);
+            this.findTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.FindTextBoxKeyPress);
+            this.findTextBox.TextChanged += new System.EventHandler(this.FindTextBoxTextChanged);
+            this.findTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FindTextBoxKeyDown);
             // 
             // programsContextMenu
             // 
@@ -63,21 +63,21 @@ namespace VisualUninstaller
             this.removefromthelistToolStripMenuItem});
             this.programsContextMenu.Name = "programsContextMenu";
             this.programsContextMenu.Size = new System.Drawing.Size(185, 48);
-            this.programsContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
+            this.programsContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.ContextMenuStrip1Opening);
             // 
             // removeToolStripMenuItem
             // 
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
             this.removeToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.removeToolStripMenuItem.Text = "Remove application";
-            this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
+            this.removeToolStripMenuItem.Click += new System.EventHandler(this.RemoveToolStripMenuItemClick);
             // 
             // removefromthelistToolStripMenuItem
             // 
             this.removefromthelistToolStripMenuItem.Name = "removefromthelistToolStripMenuItem";
             this.removefromthelistToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.removefromthelistToolStripMenuItem.Text = "Remove from the list";
-            this.removefromthelistToolStripMenuItem.Click += new System.EventHandler(this.removefromthelistToolStripMenuItem_Click);
+            this.removefromthelistToolStripMenuItem.Click += new System.EventHandler(this.RemovefromthelistToolStripMenuItemClick);
             // 
             // removeSelectedBtn
             // 
@@ -90,7 +90,7 @@ namespace VisualUninstaller
             this.removeSelectedBtn.TabIndex = 2;
             this.removeSelectedBtn.Text = "Remove selected";
             this.removeSelectedBtn.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.removeSelectedBtn.Click += new System.EventHandler(this.button1_Click);
+            this.removeSelectedBtn.Click += new System.EventHandler(this.Button1Click);
             // 
             // pictureBox1
             // 
@@ -135,7 +135,7 @@ namespace VisualUninstaller
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Visual Uninstaller";
-            this.Load += new System.EventHandler(this.Form1_Load);
+            this.Load += new System.EventHandler(this.Form1Load);
             this.programsContextMenu.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);

@@ -1,6 +1,6 @@
 ﻿/*
  * UninstallInformations
- * 
+ *
  * Copyright (C) 2006 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
@@ -18,37 +18,161 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-using System;
-using System.IO;
-using System.Text;
-using System.Diagnostics;
-using System.Collections.Generic;
-
-using Microsoft.Win32;
-using System.Runtime.InteropServices;
-using System.Drawing;
-using System.Text.RegularExpressions;
-
 namespace BlackFox.Win32.UninstallInformations
 {
-    public class NotUninstallableProgramException : Exception {
-        public NotUninstallableProgramException(Information info)
-            : base(info.DisplayName + " : This program isn't uninstallable")
-        {
-        }
-    };
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Drawing;
+    using System.Runtime.InteropServices;
+    using System.Text.RegularExpressions;
+    using JetBrains.Annotations;
+    using Microsoft.Win32;
 
     public class Information : IComparable<Information>
     {
-        struct PROCESS_INFORMATION{
+        public Information(RegistryKey key)
+        {
+            KeyName = key.Name;
+            DisplayName = (string)key.GetValue("DisplayName");
+            UninstallString = (string)key.GetValue("UninstallString");
+            UninstallDir = (string)key.GetValue("UninstallDir");
+            DisplayIconPath = (string)key.GetValue("DisplayIcon");
+            Comments = (string)key.GetValue("Comments");
+            Publisher = (string)key.GetValue("Publisher");
+            ParentKeyName = (string)key.GetValue("ParentKeyName");
+        }
+
+        public string Publisher { get; }
+
+        public string Comments { get; }
+
+        public string DisplayName { get; }
+
+        public string KeyName { get; }
+
+        public string UninstallString { get; }
+
+        public string UninstallDir { get; }
+
+        public string ParentKeyName { get; }
+
+        public string DisplayIconPath { get; set; }
+
+        public Icon Icon
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(DisplayIconPath))
+                {
+                    try
+                    {
+                        return Icons.ExtractFromRegistryString(
+                            DisplayIconPath,
+                            Icons.SystemIconSize.Large);
+                    }
+                    catch (Icons.IconNotFoundException)
+                    {
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        public bool Uninstallable => UninstallString != null;
+
+        public int CompareTo(Information other)
+        {
+            return DisplayName?.CompareTo(other.DisplayName) ?? 0;
+        }
+
+        public bool Equals(Information other)
+        {
+            return other.KeyName == KeyName;
+        }
+
+        public void Uninstall()
+        {
+            if (UninstallString != null)
+            {
+                PROCESS_INFORMATION pi;
+                STARTUPINFO si = default(STARTUPINFO);
+                si.wShowWindow = 1;
+                CreateProcess(
+                    null,
+                    UninstallString,
+                    IntPtr.Zero,
+                    IntPtr.Zero,
+                    false,
+                    0,
+                    IntPtr.Zero,
+                    UninstallDir,
+                    ref si,
+                    out pi);
+                CloseHandle(pi.hProcess);
+                CloseHandle(pi.hThread);
+
+                // FIXME: This line can throw. process already closed ?
+                CloseHandle(pi.dwProcessId);
+                CloseHandle(pi.dwThreadId);
+            }
+            else
+            {
+                throw new NotUninstallableProgramException(this);
+            }
+        }
+
+        public override string ToString()
+        {
+            return DisplayName;
+        }
+
+        /// <summary>
+        ///     Remove the program from registry without running the uninstaller.
+        /// </summary>
+        public void RemoveFromRegistry()
+        {
+            string keyName = Regex.Replace(KeyName, @"HKEY_LOCAL_MACHINE\\", "");
+            Registry.LocalMachine.DeleteSubKeyTree(keyName);
+        }
+
+#pragma warning disable SA1307 // Accessible fields must begin with upper-case letter
+#pragma warning disable 649
+#pragma warning disable 169
+#pragma warning disable 414
+
+        [DllImport("kernel32.dll")]
+        private static extern bool CreateProcess(
+            string lpApplicationName,
+            string lpCommandLine,
+            IntPtr lpProcessAttributes,
+            IntPtr lpThreadAttributes,
+            bool bInheritHandles,
+            uint dwCreationFlags,
+            IntPtr lpEnvironment,
+            string lpCurrentDirectory,
+            [In] ref STARTUPINFO lpStartupInfo,
+            out PROCESS_INFORMATION lpProcessInformation);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool CloseHandle(IntPtr hObject);
+
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        private struct PROCESS_INFORMATION
+        {
             public IntPtr hProcess;
             public IntPtr hThread;
             public IntPtr dwProcessId;
+
             public IntPtr dwThreadId;
         }
 
-	    struct STARTUPINFO{
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        [UsedImplicitly]
+        private struct STARTUPINFO
+        {
             public int cb;
+
             public string lpReserved;
             public string lpDesktop;
             public string lpTitle;
@@ -60,6 +184,7 @@ namespace BlackFox.Win32.UninstallInformations
             public int dwYCountChars;
             public int dwFillAttribute;
             public int dwFlags;
+
             public short wShowWindow;
             public short cbReserved2;
             public byte lpReserved2;
@@ -68,142 +193,9 @@ namespace BlackFox.Win32.UninstallInformations
             public int hStdError;
         }
 
-        [DllImport("kernel32.dll")]
-        static extern bool CreateProcess(string lpApplicationName,
-          string lpCommandLine, IntPtr lpProcessAttributes, IntPtr lpThreadAttributes,
-          bool bInheritHandles, uint dwCreationFlags, IntPtr lpEnvironment,
-          string lpCurrentDirectory, [In] ref STARTUPINFO lpStartupInfo,
-          out PROCESS_INFORMATION lpProcessInformation);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool CloseHandle(IntPtr hObject);
-
-        string m_keyName;
-        string m_displayName;
-        string m_uninstallString;
-        string m_uninstallDir;
-        string m_publisher;
-        string m_comments;
-        string m_displayIconPath;
-        string m_parentKeyName;
-
-        public string Comments
-        {
-            get { return m_comments; }
-        }
-
-        public string DisplayName
-        {
-            get { return m_displayName; }
-        }
-
-        public string KeyName
-        {
-            get { return m_keyName; }
-        }
-
-        public string UninstallString
-        {
-            get { return m_uninstallString; }
-        }
-
-        public string UninstallDir
-        {
-            get { return m_uninstallDir; }
-        }
-
-        public string ParentKeyName
-        {
-            get { return m_parentKeyName; }
-        }
-
-        public Information(RegistryKey key)
-        {
-            m_keyName = key.Name;
-            m_displayName = (string)key.GetValue("DisplayName");
-            m_uninstallString = (string)key.GetValue("UninstallString");
-            m_uninstallDir = (string)key.GetValue("UninstallDir");
-            m_displayIconPath = (string)key.GetValue("DisplayIcon");
-            m_comments = (string)key.GetValue("Comments");
-            m_publisher = (string)key.GetValue("Publisher");
-            m_parentKeyName = (string)key.GetValue("ParentKeyName");
-        }
-
-        public int CompareTo(Information other)
-        {
-            return (m_displayName==null) ? 0 : m_displayName.CompareTo(other.m_displayName);
-        }
-
-        public bool Equals(Information other)
-        {
-            return (other.m_keyName == m_keyName);
-        }
-
-        public void Uninstall()
-        {
-            if (UninstallString != null)
-            {
-                PROCESS_INFORMATION pi;
-                STARTUPINFO si = new STARTUPINFO();
-                si.wShowWindow = 1;
-                CreateProcess(null, UninstallString, IntPtr.Zero, IntPtr.Zero,
-                    false, 0, IntPtr.Zero, UninstallDir, ref si, out pi);
-                CloseHandle(pi.hProcess);
-                CloseHandle(pi.hThread);
-                //FIXME: This line can throw. process already closed ?
-                CloseHandle(pi.dwProcessId);
-                CloseHandle(pi.dwThreadId);
-            }
-            else
-            {
-                throw new NotUninstallableProgramException(this);
-            }
-        }
-
-        public string DisplayIconPath
-        {
-            get { return m_displayIconPath; }
-            set { m_displayIconPath = value; }
-        }
-
-        public Icon Icon
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(m_displayIconPath))
-                {
-                    try
-                    {
-                        return Icons.ExtractFromRegistryString(m_displayIconPath,
-                            Icons.SystemIconSize.Large);
-                    }
-                    catch (Icons.IconNotFoundException) { }
-                }
-                return null;
-            }
-        }
-
-        public bool Uninstallable
-        {
-            get
-            {
-                return (UninstallString != null);
-            }
-        }
-
-        public override string ToString()
-        {
-            return DisplayName;
-        }
-
-        /// <summary>
-        /// Remove the program from registry without running the uninstaller.
-        /// </summary>
-        public void RemoveFromRegistry()
-        {
-            string keyName = Regex.Replace(m_keyName, @"HKEY_LOCAL_MACHINE\\", "");
-            Registry.LocalMachine.DeleteSubKeyTree(keyName);
-        }
-
+#pragma warning restore 414
+#pragma warning restore 169
+#pragma warning restore 649
+#pragma warning restore SA1307 // Accessible fields must begin with upper-case letter
     }
 }

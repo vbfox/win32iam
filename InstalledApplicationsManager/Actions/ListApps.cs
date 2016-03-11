@@ -1,6 +1,6 @@
 ﻿/*
  * InstalledApplicationManager
- * 
+ *
  * Copyright (C) 2006 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
@@ -18,28 +18,24 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-using System;
-using System.Collections.Generic;
-using BlackFox.Win32.UninstallInformations;
-
 namespace BlackFox.InstalledApplicationsManager.Actions
 {
+    using System;
+    using System.Collections.Generic;
+    using BlackFox.Win32.UninstallInformations;
+
     public class ListApps : IAction
     {
+        public static string Name => "list";
+
+        public int ParametersCount => 0;
+
         public void Execute(IList<string> parameters)
         {
-            // Vivement le COmega... Console.WriteLine(Informations.GetInformations().DisplayName);
-            foreach(Information info in Informations.GetInformations())
+            foreach (Information info in Informations.GetInformations())
             {
                 Console.WriteLine(info.DisplayName);
             }
         }
-
-        public int ParametersCount
-        {
-            get { return 0; }
-        }
-
-        public static string Name { get { return "list"; } }
     }
 }

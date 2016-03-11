@@ -39,7 +39,7 @@ namespace VisualUninstaller.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("VisualUninstaller.Properties.Resources", typeof(Resources).Assembly);
+                    var temp = new global::System.Resources.ResourceManager("VisualUninstaller.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -62,7 +62,7 @@ namespace VisualUninstaller.Properties {
         
         internal static System.Drawing.Icon Windows_Installer {
             get {
-                object obj = ResourceManager.GetObject("Windows_Installer", resourceCulture);
+                var obj = ResourceManager.GetObject("Windows_Installer", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

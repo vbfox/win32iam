@@ -1,6 +1,6 @@
 /*
  * VisualUninstaller - Add/Remove programs replacement
- * 
+ *
  * Copyright (C) 2006 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
@@ -27,18 +27,22 @@ namespace VisualUninstaller
     using System.Text.RegularExpressions;
     using System.Windows.Forms;
     using BlackFox.Win32.UninstallInformations;
+    using VisualUninstaller.Properties;
 
     internal class ProgramsListBox : ListBox
     {
+#pragma warning disable SA1310 // Field names must not contain underscore
+        private const int WM_ERASEBKGND = 0x0014;
+#pragma warning restore SA1310 // Field names must not contain underscore
         private static readonly Color selectedBgColor = Color.FromArgb(61, 128, 223);
         private static readonly Color selectedTextColor = Color.White;
         private static readonly Color bgColor = Color.White;
         private static readonly Color bgColorAlt = Color.FromArgb(237, 243, 254);
         private static readonly Color textColor = Color.Black;
-
-        private readonly List<Information> infos;
         private readonly List<Information> displayedInfos;
         private readonly Dictionary<Information, Icon> iconCache;
+
+        private readonly List<Information> infos;
 
         public ProgramsListBox()
         {
@@ -47,7 +51,7 @@ namespace VisualUninstaller
             // All informations in registry
             infos = Informations.GetInformations().ToList();
 
-            //Information displayed (Filter applied, we start with no filter)
+            // Information displayed (Filter applied, we start with no filter)
             displayedInfos = new List<Information>();
             displayedInfos.AddRange(infos);
 
@@ -56,30 +60,78 @@ namespace VisualUninstaller
             DrawItem += OnDrawItem;
         }
 
-        private const int WM_ERASEBKGND = 0x0014;
+        public Information SelectedInfo => (Information)SelectedItem;
+
+        public void UninstallSelected()
+        {
+            SelectedInfo?.Uninstall();
+        }
+
+        public void RemoveSelectedFromRegistry()
+        {
+            SelectedInfo?.RemoveFromRegistry();
+        }
+
+        public IEnumerable<Information> GetFilteredInfos(Regex regexFilter)
+        {
+            return infos.Where(i => regexFilter.IsMatch(i.DisplayName));
+        }
+
+        public void SetFilter(Regex regexFilter)
+        {
+            Information selectedInfo = SelectedInfo;
+
+            BeginUpdate();
+            try
+            {
+                Items.Clear();
+                foreach (Information info in GetFilteredInfos(regexFilter))
+                {
+                    Items.Add(info);
+                }
+
+                if ((selectedInfo != null) && Items.Contains(selectedInfo))
+                {
+                    SelectedItem = selectedInfo;
+                }
+
+                if (Items.Count == 1)
+                {
+                    SelectedIndex = 0;
+                }
+            }
+            finally
+            {
+                EndUpdate();
+            }
+
+            OnSelectedIndexChanged(EventArgs.Empty);
+        }
 
         protected override void WndProc(ref Message m)
         {
             if (m.Msg == WM_ERASEBKGND)
             {
-                var maxItemsOnScreen = ClientSize.Height / ItemHeight;
-                var bottomIndex = TopIndex + maxItemsOnScreen;
-                var atEndOfListBox = bottomIndex > Items.Count-1;
+                int maxItemsOnScreen = ClientSize.Height / ItemHeight;
+                int bottomIndex = TopIndex + maxItemsOnScreen;
+                bool atEndOfListBox = bottomIndex > Items.Count - 1;
                 if (atEndOfListBox)
                 {
-                    var hdc = m.WParam;
-                    var g = Graphics.FromHdcInternal(hdc);
+                    IntPtr hdc = m.WParam;
+                    Graphics g = Graphics.FromHdcInternal(hdc);
 
-                    var itemsOnScreen = Math.Min(Items.Count, maxItemsOnScreen);
-                    var itemsHeight = itemsOnScreen * ItemHeight;
+                    int itemsOnScreen = Math.Min(Items.Count, maxItemsOnScreen);
+                    int itemsHeight = itemsOnScreen * ItemHeight;
 
-                    var toDraw = ClientSize.Height - itemsHeight;
-                    g.FillRectangle(new SolidBrush(BackColor),
+                    int toDraw = ClientSize.Height - itemsHeight;
+                    g.FillRectangle(
+                        new SolidBrush(BackColor),
                         ClientRectangle.Left,
                         ClientRectangle.Top + itemsHeight,
                         ClientSize.Width,
                         toDraw);
                 }
+
                 m.Result = (IntPtr)1;
                 return;
             }
@@ -96,7 +148,7 @@ namespace VisualUninstaller
                 /*
                  * Find where to put the text
                  */
-                var y = e.Bounds.Height / 2;
+                int y = e.Bounds.Height / 2;
                 y -= (int)(e.Graphics.MeasureString(info.DisplayName, e.Font).Height / 2);
                 var textPoint = new PointF(35, y);
 
@@ -119,7 +171,7 @@ namespace VisualUninstaller
                 Icon icon;
                 if (!iconCache.TryGetValue(info, out icon))
                 {
-                    icon = info.Icon ?? Properties.Resources.Windows_Installer;
+                    icon = info.Icon ?? Resources.Windows_Installer;
 
                     iconCache[info] = icon;
                 }
@@ -127,56 +179,18 @@ namespace VisualUninstaller
                 /*
                  * Display
                  */
-                
-                e.Graphics.FillRectangle(new SolidBrush(bgColor), e.Bounds.Left, e.Bounds.Top, e.Bounds.Width, e.Bounds.Height);
+
+                e.Graphics.FillRectangle(
+                    new SolidBrush(bgColor),
+                    e.Bounds.Left,
+                    e.Bounds.Top,
+                    e.Bounds.Width,
+                    e.Bounds.Height);
                 textPoint.X += e.Bounds.X;
                 textPoint.Y += e.Bounds.Y;
                 e.Graphics.DrawString(info.DisplayName, Font, new SolidBrush(textColor), textPoint);
                 e.Graphics.DrawIcon(icon, new Rectangle(1 + e.Bounds.X, 1 + e.Bounds.Y, 32, 32));
             }
-        }
-
-        public Information SelectedInfo => (Information)SelectedItem;
-
-        public void UninstallSelected()
-        {
-            SelectedInfo?.Uninstall();
-        }
-
-        public void RemoveSelectedFromRegistry()
-        {
-            SelectedInfo?.RemoveFromRegistry();
-        }
-
-        public IEnumerable<Information> GetFilteredInfos(Regex regexFilter)
-        {
-            return infos.Where(i => regexFilter.IsMatch(i.DisplayName));
-        }
-
-        public void SetFilter(Regex regexFilter)
-        {
-            var selectedInfo = SelectedInfo;
-
-            BeginUpdate();
-            try
-            {
-                Items.Clear();
-                foreach (var info in GetFilteredInfos(regexFilter))
-                {
-                    Items.Add(info);
-                }
-
-                if ((selectedInfo != null) && (Items.Contains(selectedInfo)))
-                {
-                    SelectedItem = selectedInfo;
-                }
-                if (Items.Count == 1) SelectedIndex = 0;
-            }
-            finally
-            {
-                EndUpdate();
-            }
-            OnSelectedIndexChanged(EventArgs.Empty);
         }
     }
 }

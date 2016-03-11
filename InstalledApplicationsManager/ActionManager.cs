@@ -1,6 +1,6 @@
 ﻿/*
  * InstalledApplicationManager
- * 
+ *
  * Copyright (C) 2006 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
@@ -18,28 +18,31 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-using System;
-using System.Collections.Generic;
-
 namespace BlackFox.InstalledApplicationsManager
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using BlackFox.InstalledApplicationsManager.Actions;
+
     public static class ActionManager
     {
         private static readonly Dictionary<string, Type> actionClasses = new Dictionary<string, Type>();
-        
+
         static ActionManager()
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                foreach (var type in assembly.GetTypes())
+                foreach (Type type in assembly.GetTypes())
                 {
-                    foreach(var interfaceType in type.GetInterfaces())
+                    foreach (Type interfaceType in type.GetInterfaces())
                     {
                         if (interfaceType == typeof(IAction))
                         {
-                            var nameProperty = type.GetProperty("Name");
-                            var getMethod = nameProperty?.GetGetMethod();
-                            if (getMethod != null && (getMethod.IsStatic))
+                            PropertyInfo nameProperty = type.GetProperty("Name");
+                            MethodInfo getMethod = nameProperty?.GetGetMethod();
+                            if (getMethod != null && getMethod.IsStatic)
                             {
                                 var name = (string)getMethod.Invoke(null, null);
                                 actionClasses.Add(name, type);
@@ -50,22 +53,7 @@ namespace BlackFox.InstalledApplicationsManager
             }
         }
 
-        private static IAction GetActionInstance(string userName)
-        {
-            return (IAction)Activator.CreateInstance(actionClasses[userName]);
-        }
-
-        private static bool ActionExists(string actionName)
-        {
-            return actionClasses.ContainsKey(actionName);
-        }
-
-        public static List<string> ActionNamesList {
-            get
-            {
-                return new List<string>(actionClasses.Keys);
-            }
-        }
+        public static List<string> ActionNamesList => actionClasses.Keys.ToList();
 
         public static void ExecuteAction(string actionName, IList<string> parameters)
         {
@@ -76,21 +64,35 @@ namespace BlackFox.InstalledApplicationsManager
             }
             else
             {
-                actionInstance = new Actions.Help();
+                actionInstance = new Help();
                 parameters.Clear();
             }
 
             if (parameters.Count != actionInstance.ParametersCount)
             {
                 // -1 signifie un nombre illimité d'arguments (mais pas 0)
-                if ((actionInstance.ParametersCount != -1))
+                if (actionInstance.ParametersCount != -1)
                 {
-                    var puralIfNeeded = (actionInstance.ParametersCount != 1) ? "s" : "";
-                    Console.WriteLine("This action require {0} parameter{1}.", actionInstance.ParametersCount, puralIfNeeded);
+                    string puralIfNeeded = actionInstance.ParametersCount != 1 ? "s" : "";
+                    Console.WriteLine(
+                        "This action require {0} parameter{1}.",
+                        actionInstance.ParametersCount,
+                        puralIfNeeded);
                     return;
                 }
             }
+
             actionInstance.Execute(parameters);
+        }
+
+        private static IAction GetActionInstance(string userName)
+        {
+            return (IAction)Activator.CreateInstance(actionClasses[userName]);
+        }
+
+        private static bool ActionExists(string actionName)
+        {
+            return actionClasses.ContainsKey(actionName);
         }
     }
 }

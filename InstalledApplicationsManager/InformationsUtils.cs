@@ -1,6 +1,6 @@
 /*
  * InstalledApplicationManager
- * 
+ *
  * Copyright (C) 2006 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
@@ -18,22 +18,23 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-using System;
-using System.Collections.Generic;
-using BlackFox.Win32.UninstallInformations;
-
 namespace BlackFox.InstalledApplicationsManager
 {
-    static class InformationsUtils
+    using System;
+    using System.Collections.Generic;
+    using BlackFox.Win32.UninstallInformations;
+
+    internal static class InformationsUtils
     {
         public static Information SelectInformation(IList<Information> infos)
         {
             Information selectedInformation = null;
 
-            for (int i = 0; i < infos.Count; i++)
+            for (var i = 0; i < infos.Count; i++)
             {
                 Console.WriteLine("[{0}] {1}", i, infos[i].DisplayName);
             }
+
             Console.Write("Choice (Return to cancel): ");
             string inputString = Console.ReadLine();
 

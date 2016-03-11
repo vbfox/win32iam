@@ -1,6 +1,6 @@
 ﻿/*
  * InstalledApplicationManager
- * 
+ *
  * Copyright (C) 2006 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
@@ -18,38 +18,36 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-
 namespace BlackFox.InstalledApplicationsManager.Actions
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Reflection;
+
     public class Help : IAction
     {
+        public static string Name { get; } = "help";
+
+        public int ParametersCount { get; } = 0;
+
         public void Execute(IList<string> parameters)
         {
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
-            string versionString = String.Format("{0}.{1}", version.Major, version.Minor);
+            string versionString = $"{version.Major}.{version.Minor}";
 
             Console.WriteLine("Installed Applications Manager v{0}", versionString);
             Console.WriteLine();
             Console.WriteLine("Usage: iam Action [parameter]");
             Console.WriteLine();
 
-            string verbs = "";
+            var verbs = "";
             foreach (string verb in ActionManager.ActionNamesList)
             {
-                verbs += string.Format(", {0}", verb);
+                verbs += $", {verb}";
             }
+
             verbs = verbs.TrimStart(',');
             Console.WriteLine("Actions:{0}.", verbs);
         }
-
-        public int ParametersCount
-        {
-            get { return 0; }
-        }
-
-        public static string Name { get { return "help"; } }
     }
 }

@@ -1,6 +1,6 @@
 ﻿/*
  * InstalledApplicationManager
- * 
+ *
  * Copyright (C) 2006-2010 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
@@ -27,14 +27,18 @@ namespace BlackFox.InstalledApplicationsManager.Actions
 
     public class Search : IAction
     {
+        public static string Name => "search";
+
+        public int ParametersCount => 1;
+
         public void Execute(IList<string> parameters)
         {
             if (parameters.Count > 0)
             {
-                List<Information> infos = Informations.GetInformations(parameters[0]).ToList();
+                var infos = Informations.GetInformations(parameters[0]).ToList();
                 if (infos.Count > 0)
                 {
-                    foreach (Information info in infos)
+                    foreach (var info in infos)
                     {
                         Console.WriteLine(info.DisplayName);
                     }
@@ -49,12 +53,5 @@ namespace BlackFox.InstalledApplicationsManager.Actions
                 Console.WriteLine("Unable to search nothing, if you want to list all programs use the \"list\" action.");
             }
         }
-
-        public int ParametersCount
-        {
-            get { return 1; }
-        }
-
-        public static string Name { get { return "search"; } }
     }
 }

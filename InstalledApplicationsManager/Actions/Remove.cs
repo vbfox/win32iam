@@ -1,6 +1,6 @@
 ﻿/*
  * InstalledApplicationManager
- * 
+ *
  * Copyright (C) 2006 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
@@ -27,10 +27,9 @@ namespace BlackFox.InstalledApplicationsManager.Actions
 
     public class Remove : IAction
     {
-        public int ParametersCount
-        {
-            get { return 1; }
-        }
+        public static string Name => "remove";
+
+        public int ParametersCount => 1;
 
         public void Execute(IList<string> parameters)
         {
@@ -61,7 +60,5 @@ namespace BlackFox.InstalledApplicationsManager.Actions
                 }
             }
         }
-
-        public static string Name { get { return "remove"; } }
-}
+    }
 }

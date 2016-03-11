@@ -1,6 +1,6 @@
 /*
  * VisualUninstaller - Add/Remove programs replacement
- * 
+ *
  * Copyright (C) 2006 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
@@ -18,18 +18,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-using System;
-using System.Windows.Forms;
-
 namespace VisualUninstaller
 {
-    static class Program
+    using System;
+    using System.Windows.Forms;
+
+    internal static class Program
     {
         /// <summary>
-        /// The main entry point for the application.
+        ///     The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             Application.EnableVisualStyles();
             Application.Run(new FrmMain());

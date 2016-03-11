@@ -1,6 +1,6 @@
 ﻿/*
  * UninstallInformations
- * 
+ *
  * Copyright (C) 2006 Julien Roncaglia
  *
  * This library is free software; you can redistribute it and/or
@@ -18,17 +18,19 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Win32;
-using System.Text.RegularExpressions;
-using System.Linq;
-
 namespace BlackFox.Win32.UninstallInformations
 {
-    static public class Informations
+    using System.Collections.Generic;
+    using System.Text.RegularExpressions;
+    using Microsoft.Win32;
+
+    public static class Informations
     {
+        public delegate bool InformationFilterDelegate(Information info);
+
+        private static InformationFilterDelegate BaseFilterDelegate { get; }
+            = info => (info.DisplayName != null) && (info.ParentKeyName == null) && info.Uninstallable;
+
         public static RegistryKey OpenUninstallKey(RegistryKey hive)
         {
             return hive.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
@@ -37,70 +39,6 @@ namespace BlackFox.Win32.UninstallInformations
         public static RegistryKey OpenUninstallKeyWow6432(RegistryKey hive)
         {
             return hive.OpenSubKey(@"Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall");
-        }
-
-        static Dictionary<string, string> GetWindowsInstallerIcons()
-        {
-            var result = new Dictionary<string, string>();
-            using (var wiProducts = Registry.ClassesRoot.OpenSubKey(@"Installer\Products"))
-            {
-                foreach (var subKeyName in wiProducts.GetSubKeyNames())
-                {
-                    using (var subKey = wiProducts.OpenSubKey(subKeyName))
-                    {
-                        var productIcon = subKey.GetValue("ProductIcon") as string;
-                        var productName = subKey.GetValue("ProductName") as string;
-
-                        if ( (productIcon != null) && (productName != null) && !result.ContainsKey(productName))
-                        {
-                            result.Add(productName, productIcon);
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
-        static void PathInformationsWithWindowsInstallerIcons(List<Information> infos)
-        {
-            var icons = GetWindowsInstallerIcons();
-            foreach (var info in infos)
-            {
-                if (info.DisplayName == null) continue;
-                string iconPath;
-                if ( ((info.DisplayIconPath == null) || (info.DisplayIconPath == "")) 
-                    && icons.TryGetValue(info.DisplayName, out iconPath) )
-                {
-                    info.DisplayIconPath = iconPath;
-                }
-            }
-        }
-
-        public delegate bool InformationFilterDelegate(Information info);
-
-        static IEnumerable<Information> EnumerateInformationsFromKey(RegistryKey key, InformationFilterDelegate filter)
-        {
-            if (key == null) yield break;
-            try
-            {
-                foreach (string subKeyName in key.GetSubKeyNames())
-                {
-                    using (var subKey = key.OpenSubKey(subKeyName, false))
-                    {
-                        if (subKey == null) continue;
-
-                        var info = new Information(subKey);
-                        if (filter(info))
-                        {
-                            yield return info;
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                key.Close();
-            }
         }
 
         public static IEnumerable<Information> GetInformations(InformationFilterDelegate filter)
@@ -115,19 +53,6 @@ namespace BlackFox.Win32.UninstallInformations
             infos.Sort();
             PathInformationsWithWindowsInstallerIcons(infos);
             return infos;
-        }
-
-        static InformationFilterDelegate BaseFilterDelegate
-        {
-            get
-            {
-                return delegate(Information info)
-                {
-                    return (info.DisplayName != null)
-                    && (info.ParentKeyName == null)
-                    && (info.Uninstallable);
-                };
-            }
         }
 
         public static IEnumerable<Information> GetInformations()
@@ -153,6 +78,82 @@ namespace BlackFox.Win32.UninstallInformations
         public static IEnumerable<Information> GetInformations(string regexpString, InformationFilterDelegate filter)
         {
             return GetInformations(new Regex(regexpString, RegexOptions.IgnoreCase), filter);
+        }
+
+private static Dictionary<string, string> GetWindowsInstallerIcons()
+        {
+            var result = new Dictionary<string, string>();
+            using (RegistryKey wiProducts = Registry.ClassesRoot.OpenSubKey(@"Installer\Products"))
+            {
+                foreach (string subKeyName in wiProducts.GetSubKeyNames())
+                {
+                    using (RegistryKey subKey = wiProducts.OpenSubKey(subKeyName))
+                    {
+                        var productIcon = subKey.GetValue("ProductIcon") as string;
+                        var productName = subKey.GetValue("ProductName") as string;
+
+                        if ((productIcon != null) && (productName != null) && !result.ContainsKey(productName))
+                        {
+                            result.Add(productName, productIcon);
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private static void PathInformationsWithWindowsInstallerIcons(List<Information> infos)
+        {
+            var icons = GetWindowsInstallerIcons();
+            foreach (Information info in infos)
+            {
+                if (info.DisplayName == null)
+                {
+                    continue;
+                }
+
+                string iconPath;
+                if (((info.DisplayIconPath == null) || (info.DisplayIconPath == ""))
+                    && icons.TryGetValue(info.DisplayName, out iconPath))
+                {
+                    info.DisplayIconPath = iconPath;
+                }
+            }
+        }
+
+        private static IEnumerable<Information> EnumerateInformationsFromKey(
+            RegistryKey key,
+            InformationFilterDelegate filter)
+        {
+            if (key == null)
+            {
+                yield break;
+            }
+
+            try
+            {
+                foreach (string subKeyName in key.GetSubKeyNames())
+                {
+                    using (RegistryKey subKey = key.OpenSubKey(subKeyName, false))
+                    {
+                        if (subKey == null)
+                        {
+                            continue;
+                        }
+
+                        var info = new Information(subKey);
+                        if (filter(info))
+                        {
+                            yield return info;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                key.Close();
+            }
         }
     }
 }
