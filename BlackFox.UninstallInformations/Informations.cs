@@ -39,8 +39,6 @@ namespace BlackFox.Win32.UninstallInformations
             return hive.OpenSubKey(@"Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall");
         }
 
-        #region Windows Installer Icons
-
         static Dictionary<string, string> GetWindowsInstallerIcons()
         {
             var result = new Dictionary<string, string>();
@@ -77,10 +75,6 @@ namespace BlackFox.Win32.UninstallInformations
                 }
             }
         }
-
-        #endregion
-
-        #region GetInformations
 
         public delegate bool InformationFilterDelegate(Information info);
 
@@ -160,7 +154,5 @@ namespace BlackFox.Win32.UninstallInformations
         {
             return GetInformations(new Regex(regexpString, RegexOptions.IgnoreCase), filter);
         }
-
-        #endregion
     }
 }

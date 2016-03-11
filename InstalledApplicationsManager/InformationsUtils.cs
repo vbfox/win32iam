@@ -20,7 +20,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using BlackFox.Win32.UninstallInformations;
 
 namespace BlackFox.InstalledApplicationsManager

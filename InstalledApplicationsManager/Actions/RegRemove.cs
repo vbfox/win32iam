@@ -27,9 +27,6 @@ namespace BlackFox.InstalledApplicationsManager.Actions
 
     public class RegRemove : IAction
     {
-
-        #region IAction Members
-
         public int ParametersCount
         {
             get { return 1; }
@@ -77,9 +74,6 @@ namespace BlackFox.InstalledApplicationsManager.Actions
                 }
             }
         }
-
-        #endregion
-
 
 
         public static string Name { get { return "regremove"; } }

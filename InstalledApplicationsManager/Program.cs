@@ -18,27 +18,23 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#region Using directives
-
 using System;
 using System.Collections.Generic;
-using System.Text;
-
-#endregion
 
 namespace BlackFox.InstalledApplicationsManager
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            string actionName = "";
+            var actionName = "";
             if (args.Length > 0)
             {
                 actionName = args[0];
             }
-            List<string> actionParameters = new List<string>();
-            for(int i = 1; i < args.Length; i++)
+
+            var actionParameters = new List<string>();
+            for(var i = 1; i < args.Length; i++)
             {
                 actionParameters.Add(args[i]);
             }

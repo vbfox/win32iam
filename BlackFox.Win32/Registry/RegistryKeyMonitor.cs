@@ -16,8 +16,6 @@ namespace BlackFox.Win32
         public delegate void KeyChangedDelegate(RegistryKeyMonitor monitor, bool keyDeleted);
         public delegate void ExceptionRaisedDelegate(RegistryKeyMonitor monitor, Exception e);
 
-        #region Informations set by the constructor
-
         KeyChangedDelegate m_keyChanged;
         ExceptionRaisedDelegate m_exceptionRaised;
 
@@ -33,14 +31,10 @@ namespace BlackFox.Win32
         RegistryNotifyFilter m_filter;
         RegistryNotifyFilter Filter { get { return m_filter; } }
 
-        #endregion
-
         const RegistryNotifyFilter ALL_FILTERS = RegistryNotifyFilter.Attribute
             | RegistryNotifyFilter.Key
             | RegistryNotifyFilter.Security
             | RegistryNotifyFilter.Value;
-
-        #region KeyStillExists
 
         const int ERROR_FILE_NOT_FOUND = 2;
         bool KeyStillExists
@@ -59,8 +53,6 @@ namespace BlackFox.Win32
                 }
             }
         }
-
-        #endregion
 
         public RegistryKeyMonitor(RegistryHive hive, string key, KeyChangedDelegate keyChanged,
             ExceptionRaisedDelegate exceptionRaised)

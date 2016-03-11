@@ -30,8 +30,6 @@ namespace BlackFox.Win32
 
     public static class Icons
     {
-        #region Custom exceptions class
-
         public class IconNotFoundException : Exception
         {
             public IconNotFoundException(string fileName, int index, Exception innerException)
@@ -47,10 +45,6 @@ namespace BlackFox.Win32
             {
             }
         }
-
-        #endregion
-
-        #region DllImports
 
         /// <summary>
         /// Contains information about a file object. 
@@ -178,8 +172,6 @@ namespace BlackFox.Win32
             int cbFileInfo,
             FileInfoFlags uFlags);
 
-        #endregion
-
         /// <summary>
         /// Two constants extracted from the FileInfoFlags, the only that are
         /// meaningfull for the user of this class.
@@ -199,8 +191,6 @@ namespace BlackFox.Win32
         {
             return ExtractIconEx(fileName, -1, null, null, 0);
         }
-
-        #region ExtractIcon-like functions
 
         public static void ExtractEx(string fileName, List<Icon> largeIcons,
             List<Icon> smallIcons, int firstIconIndex, int iconCount)
@@ -316,8 +306,6 @@ namespace BlackFox.Win32
                 throw new IconNotFoundException(fileName, index, e);
             }
         }
-
-        #endregion
 
         static string GetExtensionIconStringFromKeyUsingDefaultIcon(RegistryKey key)
         {

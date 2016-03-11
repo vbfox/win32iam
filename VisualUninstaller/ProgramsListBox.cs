@@ -28,54 +28,53 @@ namespace VisualUninstaller
     using System.Windows.Forms;
     using BlackFox.Win32.UninstallInformations;
 
-    class ProgramsListBox : ListBox
+    internal class ProgramsListBox : ListBox
     {
-        static readonly Color SELECTED_BG_COLOR = Color.FromArgb(61, 128, 223);
-        static readonly Color SELECTED_TEXT_COLOR = Color.White;
-        static readonly Color BG_COLOR = Color.White;
-        static readonly Color BG_COLOR_ALT = Color.FromArgb(237, 243, 254);
-        static readonly Color TEXT_COLOR = Color.Black;
+        private static readonly Color selectedBgColor = Color.FromArgb(61, 128, 223);
+        private static readonly Color selectedTextColor = Color.White;
+        private static readonly Color bgColor = Color.White;
+        private static readonly Color bgColorAlt = Color.FromArgb(237, 243, 254);
+        private static readonly Color textColor = Color.Black;
 
-        List<Information> m_infos;
-        List<Information> m_displayedInfos;
-        Dictionary<Information, Icon> m_iconCache;
+        private readonly List<Information> infos;
+        private readonly List<Information> displayedInfos;
+        private readonly Dictionary<Information, Icon> iconCache;
 
-        public ProgramsListBox() 
-            : base()
+        public ProgramsListBox()
         {
             SetStyle(ControlStyles.ResizeRedraw, true);
 
             // All informations in registry
-            m_infos = Informations.GetInformations().ToList();
+            infos = Informations.GetInformations().ToList();
 
             //Information displayed (Filter applied, we start with no filter)
-            m_displayedInfos = new List<Information>();
-            m_displayedInfos.AddRange(m_infos);
+            displayedInfos = new List<Information>();
+            displayedInfos.AddRange(infos);
 
-            m_iconCache = new Dictionary<Information, Icon>();
+            iconCache = new Dictionary<Information, Icon>();
 
-            DrawItem += new System.Windows.Forms.DrawItemEventHandler(__DrawItem);
+            DrawItem += OnDrawItem;
         }
 
-        const int WM_ERASEBKGND = 0x0014;
+        private const int WM_ERASEBKGND = 0x0014;
 
         protected override void WndProc(ref Message m)
         {
             if (m.Msg == WM_ERASEBKGND)
             {
-                int maxItemsOnScreen = (int)(ClientSize.Height / ItemHeight);
-                int bottomIndex = TopIndex + maxItemsOnScreen;
-                bool atEndOfListBox = bottomIndex > Items.Count-1;
+                var maxItemsOnScreen = ClientSize.Height / ItemHeight;
+                var bottomIndex = TopIndex + maxItemsOnScreen;
+                var atEndOfListBox = bottomIndex > Items.Count-1;
                 if (atEndOfListBox)
                 {
-                    IntPtr hdc = m.WParam;
-                    Graphics g = Graphics.FromHdcInternal(hdc);
+                    var hdc = m.WParam;
+                    var g = Graphics.FromHdcInternal(hdc);
 
-                    int itemsOnScreen = Math.Min(Items.Count, maxItemsOnScreen);
-                    int itemsHeight = itemsOnScreen * this.ItemHeight;
+                    var itemsOnScreen = Math.Min(Items.Count, maxItemsOnScreen);
+                    var itemsHeight = itemsOnScreen * ItemHeight;
 
-                    int toDraw = ClientSize.Height - itemsHeight;
-                    g.FillRectangle(new SolidBrush(this.BackColor),
+                    var toDraw = ClientSize.Height - itemsHeight;
+                    g.FillRectangle(new SolidBrush(BackColor),
                         ClientRectangle.Left,
                         ClientRectangle.Top + itemsHeight,
                         ClientSize.Width,
@@ -88,18 +87,18 @@ namespace VisualUninstaller
             base.WndProc(ref m);
         }
 
-        private void __DrawItem(object sender, DrawItemEventArgs e)
+        private void OnDrawItem(object sender, DrawItemEventArgs e)
         {
             if (e.Index >= 0)
             {
-                Information info = (Information)Items[e.Index];
+                var info = (Information)Items[e.Index];
 
                 /*
                  * Find where to put the text
                  */
-                int y = (int)(e.Bounds.Height / 2);
+                var y = e.Bounds.Height / 2;
                 y -= (int)(e.Graphics.MeasureString(info.DisplayName, e.Font).Height / 2);
-                PointF textPoint = new PointF(35, y);
+                var textPoint = new PointF(35, y);
 
                 /*
                  * Text & background colors
@@ -108,35 +107,21 @@ namespace VisualUninstaller
                 Color bgColor;
                 if ((e.State & DrawItemState.Selected) != 0)
                 {
-                    bgColor = SELECTED_BG_COLOR;
-                    textColor = SELECTED_TEXT_COLOR;
+                    bgColor = selectedBgColor;
+                    textColor = selectedTextColor;
                 }
                 else
                 {
-                    textColor = TEXT_COLOR;
-                    if (e.Index % 2 == 0)
-                    {
-                        bgColor = BG_COLOR_ALT;
-                    }
-                    else
-                    {
-                        bgColor = BG_COLOR;
-                    }
+                    textColor = ProgramsListBox.textColor;
+                    bgColor = e.Index % 2 == 0 ? bgColorAlt : ProgramsListBox.bgColor;
                 }
 
                 Icon icon;
-                if (!m_iconCache.TryGetValue(info, out icon))
+                if (!iconCache.TryGetValue(info, out icon))
                 {
-                    if (info.Icon != null)
-                    {
-                        icon = info.Icon;
-                    }
-                    else
-                    {
-                        icon = Properties.Resources.Windows_Installer;
-                    }
-                    
-                    m_iconCache[info] = icon;
+                    icon = info.Icon ?? Properties.Resources.Windows_Installer;
+
+                    iconCache[info] = icon;
                 }
 
                 /*
@@ -146,52 +131,37 @@ namespace VisualUninstaller
                 e.Graphics.FillRectangle(new SolidBrush(bgColor), e.Bounds.Left, e.Bounds.Top, e.Bounds.Width, e.Bounds.Height);
                 textPoint.X += e.Bounds.X;
                 textPoint.Y += e.Bounds.Y;
-                e.Graphics.DrawString(info.DisplayName, this.Font, new SolidBrush(textColor), textPoint);
+                e.Graphics.DrawString(info.DisplayName, Font, new SolidBrush(textColor), textPoint);
                 e.Graphics.DrawIcon(icon, new Rectangle(1 + e.Bounds.X, 1 + e.Bounds.Y, 32, 32));
             }
         }
 
-        public Information SelectedInfo
-        {
-            get
-            {
-                return (Information)SelectedItem;
-            }
-        }
+        public Information SelectedInfo => (Information)SelectedItem;
 
         public void UninstallSelected()
         {
-            if (SelectedInfo != null)
-            {
-                SelectedInfo.Uninstall();
-            }
+            SelectedInfo?.Uninstall();
         }
 
         public void RemoveSelectedFromRegistry()
         {
-            if (SelectedInfo != null)
-            {
-                SelectedInfo.RemoveFromRegistry();
-            }
+            SelectedInfo?.RemoveFromRegistry();
         }
 
         public IEnumerable<Information> GetFilteredInfos(Regex regexFilter)
         {
-            Predicate<Information> filerPredicate = delegate(Information i) { return regexFilter.IsMatch(i.DisplayName); };
-            return Utils.Filter(m_infos, filerPredicate);
-
-            // return m_infos.Select((Information i) => regexFilter.IsMatch(i.DisplayName));
+            return infos.Where(i => regexFilter.IsMatch(i.DisplayName));
         }
 
         public void SetFilter(Regex regexFilter)
         {
-            Information selectedInfo = SelectedInfo;
+            var selectedInfo = SelectedInfo;
 
             BeginUpdate();
             try
             {
                 Items.Clear();
-                foreach (Information info in GetFilteredInfos(regexFilter))
+                foreach (var info in GetFilteredInfos(regexFilter))
                 {
                     Items.Add(info);
                 }

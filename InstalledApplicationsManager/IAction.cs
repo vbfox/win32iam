@@ -18,13 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#region Using directives
-
-using System;
 using System.Collections.Generic;
-using System.Text;
-
-#endregion
 
 namespace BlackFox.InstalledApplicationsManager
 {

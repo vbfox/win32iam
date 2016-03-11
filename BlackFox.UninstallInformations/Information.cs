@@ -40,8 +40,6 @@ namespace BlackFox.Win32.UninstallInformations
 
     public class Information : IComparable<Information>
     {
-        #region Interop (CreateProcess)
-
         struct PROCESS_INFORMATION{
             public IntPtr hProcess;
             public IntPtr hThread;
@@ -80,10 +78,6 @@ namespace BlackFox.Win32.UninstallInformations
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool CloseHandle(IntPtr hObject);
 
-        #endregion
-
-        #region Infos - Private Members
-
         string m_keyName;
         string m_displayName;
         string m_uninstallString;
@@ -92,10 +86,6 @@ namespace BlackFox.Win32.UninstallInformations
         string m_comments;
         string m_displayIconPath;
         string m_parentKeyName;
-
-        #endregion
-
-        #region Infos - Public Properties
 
         public string Comments
         {
@@ -127,8 +117,6 @@ namespace BlackFox.Win32.UninstallInformations
             get { return m_parentKeyName; }
         }
 
-        #endregion
-
         public Information(RegistryKey key)
         {
             m_keyName = key.Name;
@@ -141,8 +129,6 @@ namespace BlackFox.Win32.UninstallInformations
             m_parentKeyName = (string)key.GetValue("ParentKeyName");
         }
 
-        #region IComparable<Information> Members
-
         public int CompareTo(Information other)
         {
             return (m_displayName==null) ? 0 : m_displayName.CompareTo(other.m_displayName);
@@ -152,8 +138,6 @@ namespace BlackFox.Win32.UninstallInformations
         {
             return (other.m_keyName == m_keyName);
         }
-
-        #endregion
 
         public void Uninstall()
         {
@@ -166,6 +150,7 @@ namespace BlackFox.Win32.UninstallInformations
                     false, 0, IntPtr.Zero, UninstallDir, ref si, out pi);
                 CloseHandle(pi.hProcess);
                 CloseHandle(pi.hThread);
+                //FIXME: This line can throw. process already closed ?
                 CloseHandle(pi.dwProcessId);
                 CloseHandle(pi.dwThreadId);
             }

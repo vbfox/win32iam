@@ -18,21 +18,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#region Using directives
-
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Reflection;
-
-#endregion
 
 namespace BlackFox.InstalledApplicationsManager.Actions
 {
     public class Help : IAction
     {
-        #region IAction Members
-
         public void Execute(IList<string> parameters)
         {
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
@@ -58,7 +51,5 @@ namespace BlackFox.InstalledApplicationsManager.Actions
         }
 
         public static string Name { get { return "help"; } }
-
-        #endregion
-}
+    }
 }

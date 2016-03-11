@@ -91,8 +91,6 @@ namespace VisualUninstaller
             return new Regex(result.ToString(), RegexOptions.IgnoreCase); 
         }
 
-        #region Events
-
         private void Form1_Load(object sender, EventArgs e)
         {
             UpdateVersionLabel();
@@ -192,10 +190,6 @@ namespace VisualUninstaller
                 m_programsListBox.RemoveSelectedFromRegistry();
             }
         }
-        
-        #endregion
-
-        #region Gray text in textbox
 
         private void findTextBox_Enter(object sender, EventArgs e)
         {
@@ -214,7 +208,5 @@ namespace VisualUninstaller
                 findTextBox.Text = "Search by name";
             }
         }
-
-        #endregion
     }
 }

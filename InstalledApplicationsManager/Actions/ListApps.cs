@@ -18,22 +18,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#region Using directives
-
 using System;
 using System.Collections.Generic;
-using System.Text;
 using BlackFox.Win32.UninstallInformations;
-
-#endregion
 
 namespace BlackFox.InstalledApplicationsManager.Actions
 {
     public class ListApps : IAction
     {
-
-        #region IAction Members
-
         public void Execute(IList<string> parameters)
         {
             // Vivement le COmega... Console.WriteLine(Informations.GetInformations().DisplayName);
@@ -49,7 +41,5 @@ namespace BlackFox.InstalledApplicationsManager.Actions
         }
 
         public static string Name { get { return "list"; } }
-
-        #endregion
-}
+    }
 }

@@ -18,41 +18,31 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#region Using directives
-
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Collections.ObjectModel;
-using System.Reflection;
-
-#endregion
 
 namespace BlackFox.InstalledApplicationsManager
 {
-    static public class ActionManager
+    public static class ActionManager
     {
-        static Dictionary<string, Type> actionClasses = new Dictionary<string, Type>();
+        private static readonly Dictionary<string, Type> actionClasses = new Dictionary<string, Type>();
         
         static ActionManager()
         {
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                foreach (Type type in assembly.GetTypes())
+                foreach (var type in assembly.GetTypes())
                 {
-                    foreach(Type interfaceType in type.GetInterfaces())
+                    foreach(var interfaceType in type.GetInterfaces())
                     {
                         if (interfaceType == typeof(IAction))
                         {
-                            PropertyInfo nameProperty = type.GetProperty("Name");
-                            if (nameProperty != null)
+                            var nameProperty = type.GetProperty("Name");
+                            var getMethod = nameProperty?.GetGetMethod();
+                            if (getMethod != null && (getMethod.IsStatic))
                             {
-                                MethodInfo getMethod = nameProperty.GetGetMethod();
-                                if ((getMethod != null) && (getMethod.IsStatic))
-                                {
-                                    string name = (string)getMethod.Invoke(null, null);
-                                    actionClasses.Add(name, type);
-                                }
+                                var name = (string)getMethod.Invoke(null, null);
+                                actionClasses.Add(name, type);
                             }
                         }
                     }
@@ -60,12 +50,12 @@ namespace BlackFox.InstalledApplicationsManager
             }
         }
 
-        static IAction GetActionInstance(string userName)
+        private static IAction GetActionInstance(string userName)
         {
             return (IAction)Activator.CreateInstance(actionClasses[userName]);
         }
 
-        static bool ActionExists(string actionName)
+        private static bool ActionExists(string actionName)
         {
             return actionClasses.ContainsKey(actionName);
         }
@@ -95,7 +85,7 @@ namespace BlackFox.InstalledApplicationsManager
                 // -1 signifie un nombre illimité d'arguments (mais pas 0)
                 if ((actionInstance.ParametersCount != -1))
                 {
-                    string puralIfNeeded = (actionInstance.ParametersCount != 1) ? "s" : "";
+                    var puralIfNeeded = (actionInstance.ParametersCount != 1) ? "s" : "";
                     Console.WriteLine("This action require {0} parameter{1}.", actionInstance.ParametersCount, puralIfNeeded);
                     return;
                 }
