@@ -25,6 +25,7 @@ namespace BlackFox.Win32.UninstallInformations
     using System.Drawing;
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
     using JetBrains.Annotations;
     using Microsoft.Win32;
 
@@ -36,7 +37,7 @@ namespace BlackFox.Win32.UninstallInformations
             DisplayName = (string)key.GetValue("DisplayName");
             UninstallString = (string)key.GetValue("UninstallString");
             UninstallDir = (string)key.GetValue("UninstallDir");
-            DisplayIconPath = (string)key.GetValue("DisplayIcon");
+            DisplayIconPath = (string)key.GetValue("DisplayIcon") ?? "";
             Comments = (string)key.GetValue("Comments");
             Publisher = (string)key.GetValue("Publisher");
             ParentKeyName = (string)key.GetValue("ParentKeyName");
@@ -57,27 +58,6 @@ namespace BlackFox.Win32.UninstallInformations
         public string ParentKeyName { get; }
 
         public string DisplayIconPath { get; set; }
-
-        public Icon Icon
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(DisplayIconPath))
-                {
-                    try
-                    {
-                        return Icons.ExtractFromRegistryString(
-                            DisplayIconPath,
-                            Icons.SystemIconSize.Large);
-                    }
-                    catch (Icons.IconNotFoundException)
-                    {
-                    }
-                }
-
-                return null;
-            }
-        }
 
         public bool Uninstallable => UninstallString != null;
 
@@ -134,6 +114,28 @@ namespace BlackFox.Win32.UninstallInformations
         {
             string keyName = Regex.Replace(KeyName, @"HKEY_LOCAL_MACHINE\\", "");
             Registry.LocalMachine.DeleteSubKeyTree(keyName);
+        }
+
+        public Task<Icon> GetIconAsync()
+        {
+            if (string.IsNullOrEmpty(DisplayIconPath))
+            {
+                return Task.FromResult<Icon>(null);
+            }
+
+            return Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    return Icons.ExtractFromRegistryString(
+                        DisplayIconPath,
+                        Icons.SystemIconSize.Large);
+                }
+                catch (Icons.IconNotFoundException)
+                {
+                    return null;
+                }
+            });
         }
 
 #pragma warning disable SA1307 // Accessible fields must begin with upper-case letter

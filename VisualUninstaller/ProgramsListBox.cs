@@ -25,6 +25,7 @@ namespace VisualUninstaller
     using System.Drawing;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
     using System.Windows.Forms;
     using BlackFox.Win32.UninstallInformations;
     using VisualUninstaller.Properties;
@@ -36,11 +37,11 @@ namespace VisualUninstaller
 #pragma warning restore SA1310 // Field names must not contain underscore
         private static readonly Color selectedBgColor = Color.FromArgb(61, 128, 223);
         private static readonly Color selectedTextColor = Color.White;
-        private static readonly Color bgColor = Color.White;
+        private static readonly Color normalBgColor = Color.White;
         private static readonly Color bgColorAlt = Color.FromArgb(237, 243, 254);
-        private static readonly Color textColor = Color.Black;
+        private static readonly Color normalTextColor = Color.Black;
         private readonly List<Information> displayedInfos;
-        private readonly Dictionary<Information, Icon> iconCache;
+        private readonly Dictionary<string, Icon> iconCache;
 
         private readonly List<Information> infos;
 
@@ -55,7 +56,7 @@ namespace VisualUninstaller
             displayedInfos = new List<Information>();
             displayedInfos.AddRange(infos);
 
-            iconCache = new Dictionary<Information, Icon>();
+            iconCache = new Dictionary<string, Icon>();
 
             DrawItem += OnDrawItem;
         }
@@ -164,16 +165,19 @@ namespace VisualUninstaller
                 }
                 else
                 {
-                    textColor = ProgramsListBox.textColor;
-                    bgColor = e.Index % 2 == 0 ? bgColorAlt : ProgramsListBox.bgColor;
+                    textColor = normalTextColor;
+                    bgColor = e.Index % 2 == 0 ? bgColorAlt : normalBgColor;
                 }
 
                 Icon icon;
-                if (!iconCache.TryGetValue(info, out icon))
+                if (!iconCache.TryGetValue(info.DisplayIconPath, out icon))
                 {
-                    icon = info.Icon ?? Resources.Windows_Installer;
-
-                    iconCache[info] = icon;
+                    UpdateIconCacheFor(info);
+                }
+                else
+                {
+                    // No icon at all, we display a default one
+                    icon = icon ?? Resources.Windows_Installer;
                 }
 
                 /*
@@ -189,8 +193,22 @@ namespace VisualUninstaller
                 textPoint.X += e.Bounds.X;
                 textPoint.Y += e.Bounds.Y;
                 e.Graphics.DrawString(info.DisplayName, Font, new SolidBrush(textColor), textPoint);
-                e.Graphics.DrawIcon(icon, new Rectangle(1 + e.Bounds.X, 1 + e.Bounds.Y, 32, 32));
+
+                // Icon can be null if not in cache, we'll invalidate later
+                if (icon != null)
+                {
+                    e.Graphics.DrawIcon(
+                        icon,
+                        new Rectangle(1 + e.Bounds.X, 1 + e.Bounds.Y, 32, 32));
+                }
             }
+        }
+
+        private async void UpdateIconCacheFor(Information info)
+        {
+            var icon = await info.GetIconAsync();
+            iconCache[info.DisplayIconPath] = icon;
+            Invalidate();
         }
     }
 }
