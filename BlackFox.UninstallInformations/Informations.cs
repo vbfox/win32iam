@@ -41,7 +41,7 @@ namespace BlackFox.Win32.UninstallInformations
             return hive.OpenSubKey(@"Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall");
         }
 
-        public static IEnumerable<Information> GetInformations(InformationFilterDelegate filter)
+        public static ICollection<Information> GetInformations(InformationFilterDelegate filter)
         {
             var infos = new List<Information>();
 
@@ -55,32 +55,32 @@ namespace BlackFox.Win32.UninstallInformations
             return infos;
         }
 
-        public static IEnumerable<Information> GetInformations()
+        public static ICollection<Information> GetInformations()
         {
             return GetInformations(BaseFilterDelegate);
         }
 
-        public static IEnumerable<Information> GetInformations(Regex regexp, InformationFilterDelegate filter)
+        public static ICollection<Information> GetInformations(Regex regexp, InformationFilterDelegate filter)
         {
             return GetInformations(info => filter(info) && regexp.IsMatch(info.DisplayName));
         }
 
-        public static IEnumerable<Information> GetInformations(Regex regexp)
+        public static ICollection<Information> GetInformations(Regex regexp)
         {
             return GetInformations(regexp, BaseFilterDelegate);
         }
 
-        public static IEnumerable<Information> GetInformations(string regexpString)
+        public static ICollection<Information> GetInformations(string regexpString)
         {
             return GetInformations(regexpString, BaseFilterDelegate);
         }
 
-        public static IEnumerable<Information> GetInformations(string regexpString, InformationFilterDelegate filter)
+        public static ICollection<Information> GetInformations(string regexpString, InformationFilterDelegate filter)
         {
             return GetInformations(new Regex(regexpString, RegexOptions.IgnoreCase), filter);
         }
 
-private static Dictionary<string, string> GetWindowsInstallerIcons()
+        private static Dictionary<string, string> GetWindowsInstallerIcons()
         {
             var result = new Dictionary<string, string>();
             using (RegistryKey wiProducts = Registry.ClassesRoot.OpenSubKey(@"Installer\Products"))

@@ -32,6 +32,11 @@ namespace VisualUninstaller
 
     internal class ProgramsListBox : ListBox
     {
+        private static Task<ICollection<Information>> GetInformationAsync()
+        {
+            return Task.Factory.StartNew(Informations.GetInformations);
+        }
+
 #pragma warning disable SA1310 // Field names must not contain underscore
         private const int WM_ERASEBKGND = 0x0014;
 #pragma warning restore SA1310 // Field names must not contain underscore
@@ -40,25 +45,22 @@ namespace VisualUninstaller
         private static readonly Color normalBgColor = Color.White;
         private static readonly Color bgColorAlt = Color.FromArgb(237, 243, 254);
         private static readonly Color normalTextColor = Color.Black;
-        private readonly List<Information> displayedInfos;
         private readonly Dictionary<string, Icon> iconCache;
-
-        private readonly List<Information> infos;
+        private Regex currentRegexFilter;
+        private List<Information> infos;
 
         public ProgramsListBox()
         {
             SetStyle(ControlStyles.ResizeRedraw, true);
 
             // All informations in registry
-            infos = Informations.GetInformations().ToList();
-
-            // Information displayed (Filter applied, we start with no filter)
-            displayedInfos = new List<Information>();
-            displayedInfos.AddRange(infos);
+            infos = new List<Information>();
 
             iconCache = new Dictionary<string, Icon>();
 
             DrawItem += OnDrawItem;
+
+            UpdateInformationAsync();
         }
 
         public Information SelectedInfo => (Information)SelectedItem;
@@ -75,18 +77,22 @@ namespace VisualUninstaller
 
         public IEnumerable<Information> GetFilteredInfos(Regex regexFilter)
         {
-            return infos.Where(i => regexFilter.IsMatch(i.DisplayName));
+            return regexFilter == null
+                ? infos
+                : infos.Where(i => regexFilter.IsMatch(i.DisplayName));
         }
 
         public void SetFilter(Regex regexFilter)
         {
             Information selectedInfo = SelectedInfo;
 
+            currentRegexFilter = regexFilter;
+
             BeginUpdate();
             try
             {
                 Items.Clear();
-                foreach (Information info in GetFilteredInfos(regexFilter))
+                foreach (var info in GetFilteredInfos(regexFilter))
                 {
                     Items.Add(info);
                 }
@@ -183,7 +189,6 @@ namespace VisualUninstaller
                 /*
                  * Display
                  */
-
                 e.Graphics.FillRectangle(
                     new SolidBrush(bgColor),
                     e.Bounds.Left,
@@ -209,6 +214,13 @@ namespace VisualUninstaller
             var icon = await info.GetIconAsync();
             iconCache[info.DisplayIconPath] = icon;
             Invalidate();
+        }
+
+        private async void UpdateInformationAsync()
+        {
+            var newInfo = await GetInformationAsync();
+            infos = newInfo.ToList();
+            SetFilter(currentRegexFilter);
         }
     }
 }
