@@ -30,13 +30,8 @@ namespace VisualUninstaller
     using BlackFox.Win32.UninstallInformations;
     using VisualUninstaller.Properties;
 
-    internal sealed class ProgramsListBox : ListBox
+    internal sealed class ProgramsListBox : FlickerFreeListBox
     {
-        private static Task<ICollection<Information>> GetInformationAsync()
-        {
-            return Task.Factory.StartNew(Informations.GetInformations);
-        }
-
 #pragma warning disable SA1310 // Field names must not contain underscore
         private const int WM_ERASEBKGND = 0x0014;
 #pragma warning restore SA1310 // Field names must not contain underscore
@@ -61,8 +56,6 @@ namespace VisualUninstaller
             DrawItem += OnDrawItem;
 
             UpdateInformationAsync();
-
-            DoubleBuffered = true;
         }
 
         public Information SelectedInfo => (Information)SelectedItem;
@@ -146,6 +139,11 @@ namespace VisualUninstaller
             }
 
             base.WndProc(ref m);
+        }
+
+        private static Task<ICollection<Information>> GetInformationAsync()
+        {
+            return Task.Factory.StartNew(Informations.GetInformations);
         }
 
         private void OnDrawItem(object sender, DrawItemEventArgs e)
