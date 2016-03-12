@@ -44,6 +44,8 @@ namespace VisualUninstaller
         private Regex currentRegexFilter;
         private List<Information> infos;
 
+        private Lazy<Icon> defaultIcon = new Lazy<Icon>(() => Resources.Windows_Installer);
+
         public ProgramsListBox()
         {
             SetStyle(ControlStyles.ResizeRedraw, true);
@@ -183,7 +185,7 @@ namespace VisualUninstaller
                 else
                 {
                     // No icon at all, we display a default one
-                    icon = icon ?? Resources.Windows_Installer;
+                    icon = icon ?? defaultIcon.Value;
                 }
 
                 /*
