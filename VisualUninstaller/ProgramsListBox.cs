@@ -30,7 +30,7 @@ namespace VisualUninstaller
     using BlackFox.Win32.UninstallInformations;
     using VisualUninstaller.Properties;
 
-    internal class ProgramsListBox : ListBox
+    internal sealed class ProgramsListBox : ListBox
     {
         private static Task<ICollection<Information>> GetInformationAsync()
         {
@@ -61,6 +61,8 @@ namespace VisualUninstaller
             DrawItem += OnDrawItem;
 
             UpdateInformationAsync();
+
+            DoubleBuffered = true;
         }
 
         public Information SelectedInfo => (Information)SelectedItem;
